@@ -25,6 +25,6 @@
     },
     "scripts": {
         "dev": "webpack-dev-server",
-        "fmt": "prettier --write src/*"
+        "fmt": "prettier --write 'src/**'"
     }
 }

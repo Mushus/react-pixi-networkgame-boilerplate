@@ -1,3 +1,1 @@
-
-export default class Store {
-}
+export default class Store {}
