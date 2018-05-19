@@ -6,6 +6,8 @@ import App, { AppStore } from '@/app'
 const store = new AppStore()
 
 render(
-  <App store={ store }/>,
+  <Provider store={ store }>
+    <App />
+  </Provider>,
   document.getElementById("app")
 )
