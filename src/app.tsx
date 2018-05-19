@@ -25,6 +25,8 @@ export class AppStore implements SceneStore {
    */
   @observable scene: Scene = Scene.TITLE;
 
+  @observable matching: MatchingStore = null;
+  @observable title: TitleStore = null;
   /**
    * シーンを変更する
    */
@@ -35,16 +37,19 @@ export class AppStore implements SceneStore {
 
   changeMatchingScene(store: MatchingStore): MatchingStore {
     this.scene = Scene.MATCHING;
-    return {};
+    const matchingStore =  store || new MatchingStore();
+    const oldStore = this.matching
+    this.matching = matchingStore
+    return oldStore
   }
 }
 
 const app = ({ store }: any) => {
-  const { scene }: AppStore = store;
+  const props: AppStore = store;
   return (
     <div>
-      {scene === Scene.TITLE && <TitleComponent />}
-      {scene === Scene.MATCHING && <MatchingComponent />}
+      {props.scene === Scene.TITLE && <TitleComponent />}
+      {props.scene === Scene.MATCHING && <MatchingComponent />}
     </div>
   );
 };

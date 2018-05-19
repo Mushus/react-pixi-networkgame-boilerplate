@@ -8,9 +8,8 @@ const title = ({ store }: any) => {
   return (
     <div>
       <h2>title</h2>
-      <button onClick={() => props.changeMatchingScene(Scene.MATCHING)}>
-        {" "}
-        start{" "}
+      <button onClick={() => props.changeMatchingScene(null)}>
+        start
       </button>
     </div>
   );
