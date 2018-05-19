@@ -1,14 +1,11 @@
-import * as React from "react";
-import { render } from "react-dom";
-import { Provider } from "react-redux";
-import { createStore } from "redux";
-import reducer from "@/reducer";
-import App from "@/app";
+import * as React from 'react'
+import { render } from 'react-dom'
+import { Provider } from 'mobx-react'
+import App, { AppStore } from '@/app'
 
-const store = createStore(reducer);
+const store = new AppStore()
+
 render(
-  <Provider store={store}>
-    <App />
-  </Provider>,
+  <App store={ store }/>,
   document.getElementById("app")
-);
+)

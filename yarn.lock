@@ -28,13 +28,6 @@
     "@types/node" "*"
     "@types/react" "*"
 
-"@types/react-redux@^6.0.0":
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/@types/react-redux/-/react-redux-6.0.0.tgz#31711592b13ed6d6d2fd4506e5447b00e1f0b484"
-  dependencies:
-    "@types/react" "*"
-    redux "^4.0.0"
-
 "@types/react@*", "@types/react@^16.3.14":
   version "16.3.14"
   resolved "https://registry.yarnpkg.com/@types/react/-/react-16.3.14.tgz#f90ac6834de172e13ecca430dcb6814744225d36"
@@ -2607,7 +2600,7 @@ hmac-drbg@^1.0.0:
     minimalistic-assert "^1.0.0"
     minimalistic-crypto-utils "^1.0.1"
 
-hoist-non-react-statics@^2.5.0:
+hoist-non-react-statics@^2.3.1, hoist-non-react-statics@^2.5.0:
   version "2.5.0"
   resolved "https://registry.yarnpkg.com/hoist-non-react-statics/-/hoist-non-react-statics-2.5.0.tgz#d2ca2dfc19c5a91c5a6615ce8e564ef0347e2a40"
 
@@ -2832,7 +2825,7 @@ into-stream@^3.1.0:
     from2 "^2.1.1"
     p-is-promise "^1.1.0"
 
-invariant@^2.0.0, invariant@^2.2.2:
+invariant@^2.2.2:
   version "2.2.4"
   resolved "https://registry.yarnpkg.com/invariant/-/invariant-2.2.4.tgz#610f3c92c9359ce1db616e538008d23ff35158e6"
   dependencies:
@@ -3345,10 +3338,6 @@ locate-path@^2.0.0:
     p-locate "^2.0.0"
     path-exists "^3.0.0"
 
-lodash-es@^4.17.5:
-  version "4.17.10"
-  resolved "https://registry.yarnpkg.com/lodash-es/-/lodash-es-4.17.10.tgz#62cd7104cdf5dd87f235a837f0ede0e8e5117e05"
-
 lodash@^4.13.1, lodash@^4.14.0, lodash@^4.17.10, lodash@^4.17.2, lodash@^4.17.3, lodash@^4.17.4, lodash@^4.17.5, lodash@^4.3.0:
   version "4.17.10"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.10.tgz#1b7793cf7259ea38fb3661d4d38b3260af8ae4e7"
@@ -3657,6 +3646,27 @@ mkdirp@0.5.x, mkdirp@^0.5.0, mkdirp@^0.5.1, mkdirp@~0.5.0:
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.5.1.tgz#30057438eac6cf7f8c4767f38648d6697d75c903"
   dependencies:
     minimist "0.0.8"
+
+mobx-react@^4.4.2:
+  version "4.4.3"
+  resolved "https://registry.yarnpkg.com/mobx-react/-/mobx-react-4.4.3.tgz#baa9ec41165ee35ae7b9df19bca10190f36f117e"
+  dependencies:
+    hoist-non-react-statics "^2.3.1"
+
+mobx-react@^5.1.2:
+  version "5.1.2"
+  resolved "https://registry.yarnpkg.com/mobx-react/-/mobx-react-5.1.2.tgz#ec5c2d29a1df823dbd1b37e214fa36a0907054e2"
+  dependencies:
+    hoist-non-react-statics "^2.5.0"
+    react-lifecycles-compat "^3.0.2"
+
+mobx@^3.5.1:
+  version "3.6.2"
+  resolved "https://registry.yarnpkg.com/mobx/-/mobx-3.6.2.tgz#fb9f5ff5090539a1ad54e75dc4c098b602693320"
+
+mobx@^4.2.1:
+  version "4.2.1"
+  resolved "https://registry.yarnpkg.com/mobx/-/mobx-4.2.1.tgz#dd4190daf1b43d41a3a228585253f9970b0a27dd"
 
 move-concurrently@^1.0.1:
   version "1.0.1"
@@ -4431,7 +4441,7 @@ rc@^1.1.7:
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
 
-react-dom@^16.3.2:
+react-dom@^16.2.0, react-dom@^16.3.2:
   version "16.3.2"
   resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-16.3.2.tgz#cb90f107e09536d683d84ed5d4888e9640e0e4df"
   dependencies:
@@ -4439,6 +4449,19 @@ react-dom@^16.3.2:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
     prop-types "^15.6.0"
+
+react-lifecycles-compat@^3.0.2:
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/react-lifecycles-compat/-/react-lifecycles-compat-3.0.4.tgz#4f1a273afdfc8f3488a8c516bfda78f872352362"
+
+react-mobx@^0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/react-mobx/-/react-mobx-0.0.3.tgz#91f5abb2e60a3f6e9f5937176817ccb21683a527"
+  dependencies:
+    mobx "^3.5.1"
+    mobx-react "^4.4.2"
+    react "^16.2.0"
+    react-dom "^16.2.0"
 
 react-pixi-fiber@^0.4.4:
   version "0.4.4"
@@ -4457,18 +4480,7 @@ react-reconciler@^0.7.0:
     object-assign "^4.1.1"
     prop-types "^15.6.0"
 
-react-redux@^5.0.7:
-  version "5.0.7"
-  resolved "https://registry.yarnpkg.com/react-redux/-/react-redux-5.0.7.tgz#0dc1076d9afb4670f993ffaef44b8f8c1155a4c8"
-  dependencies:
-    hoist-non-react-statics "^2.5.0"
-    invariant "^2.0.0"
-    lodash "^4.17.5"
-    lodash-es "^4.17.5"
-    loose-envify "^1.1.0"
-    prop-types "^15.6.0"
-
-react@^16.3.2:
+react@^16.2.0, react@^16.3.2:
   version "16.3.2"
   resolved "https://registry.yarnpkg.com/react/-/react-16.3.2.tgz#fdc8420398533a1e58872f59091b272ce2f91ea9"
   dependencies:
@@ -4575,13 +4587,6 @@ redent@^1.0.0:
   dependencies:
     indent-string "^2.1.0"
     strip-indent "^1.0.1"
-
-redux@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/redux/-/redux-4.0.0.tgz#aa698a92b729315d22b34a0553d7e6533555cc03"
-  dependencies:
-    loose-envify "^1.1.0"
-    symbol-observable "^1.2.0"
 
 regenerate@^1.2.1:
   version "1.4.0"
@@ -5234,10 +5239,6 @@ symbol-observable@1.0.1:
 symbol-observable@^0.2.2:
   version "0.2.4"
   resolved "https://registry.yarnpkg.com/symbol-observable/-/symbol-observable-0.2.4.tgz#95a83db26186d6af7e7a18dbd9760a2f86d08f40"
-
-symbol-observable@^1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/symbol-observable/-/symbol-observable-1.2.0.tgz#c22688aed4eab3cdc2dfeacbb561660560a00804"
 
 tapable@^1.0.0:
   version "1.0.0"
