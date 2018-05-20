@@ -11,6 +11,10 @@ const matching = ({ app }: any) => {
       <h2>matching</h2>
       { matching.scene instanceof RobbyModel && <RoomListComponent /> }
       { matching.scene instanceof CreateRoomModel && <CreateRoomComponent /> }
+      { matching.networkClosed && <div>
+        <p>ネットワークが切断されました</p>
+        <button onClick={() => props.changeTitleScene()}>戻る</button>
+      </div>}
     </div>
   );
 };

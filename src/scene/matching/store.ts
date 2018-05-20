@@ -8,10 +8,9 @@ const msUrl = `${config.matchingServer.scheme}://${config.matchingServer.url}`
 
 export default class SceneModel {
   @observable.ref scene: any
-
   @observable rooms: Room[] = [];
-
-  @observable socket: WebSocket = null;
+  @observable networkClosed = false;
+  socket: WebSocket = null;
 
   constructor() {
     this.init()
@@ -23,9 +22,9 @@ export default class SceneModel {
     socket.onmessage = (message) => {
       console.log(message)
     }
-    socket.onclose = (message) => {
-      console.log(message)
-    }
+    socket.onclose = action((message) => {
+      this.networkClosed = true
+    })
     this.socket = socket
   }
 
