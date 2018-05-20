@@ -19,7 +19,14 @@ export enum Scene {
 /**
  * シーンが持ってるstore
  */
-export interface SceneStore {
-  changeTitleScene(store: TitleStore): TitleStore;
-  changeMatchingScene(store: MatchingStore): MatchingStore;
+export interface AppStore {
+  scene: any
+  changeTitleScene(): void;
+  changeTitleScene(store: TitleStore): void;
+  changeMatchingScene(): void;
+  changeMatchingScene(store: MatchingStore): void;
+}
+
+export interface RootStore {
+  store: AppStore
 }

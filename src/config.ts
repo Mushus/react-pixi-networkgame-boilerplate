@@ -1,15 +1,24 @@
 interface Config {
-  matchingServerUrl: string
+  matchingServer: {
+    scheme: string,
+    url: string
+  }
 }
 
 let config = {
-  matchingServerUrl: "http://localhost:8090/hoge"
+  matchingServer: {
+    scheme: "http",
+    url: "localhost:8090/hoge"
+  }
 }
 
 if (process.env.NODE_ENV === 'production') {
   config = {
     ...config,
-    matchingServerUrl: ""
+    matchingServer: {
+      scheme: "http",
+      url: "localhost:8090/hoge"
+    }
   }
 }
 

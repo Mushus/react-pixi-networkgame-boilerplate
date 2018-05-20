@@ -2,7 +2,7 @@ import * as React from "react";
 import { Component } from "react";
 import { action, observable } from "mobx";
 import { inject, observer, Provider } from "mobx-react";
-import { Scene, SceneStore } from "@/declare";
+import { Scene, RootStore, AppStore as IAppStore } from "@/declare";
 import {
   Component as TitleComponent,
   Store as TitleStore
@@ -14,44 +14,41 @@ import {
 
 export type AppStoreType = {
   scene: Scene;
-} & SceneStore;
+} & AppStore;
 
 /**
  * アプリ全体のstore
  */
-export class AppStore implements SceneStore {
+export class AppStore implements AppStore {
   /**
    * 現在のシーンを管理する
    */
-  @observable scene: Scene = Scene.TITLE;
+  @observable.ref scene: any
 
-  @observable matching: MatchingStore = null;
-  @observable title: TitleStore = null;
+  constructor () {
+    this.changeTitleScene()
+  }
   /**
    * シーンを変更する
    */
-  changeTitleScene(store: TitleStore): TitleStore {
-    this.scene = Scene.TITLE;
-    return {};
+  @action changeTitleScene(store: TitleStore = new TitleStore()) {
+    this.scene = store
   }
 
-  changeMatchingScene(store: MatchingStore): MatchingStore {
-    this.scene = Scene.MATCHING;
-    const matchingStore =  store || new MatchingStore();
-    const oldStore = this.matching
-    this.matching = matchingStore
-    return oldStore
+  @action changeMatchingScene(store = new MatchingStore()) {
+    console.log(this)
+    this.scene = store
   }
 }
 
-const app = ({ store }: any) => {
-  const props: AppStore = store;
+const app = ({ app }: any) => {
+  const props = app as AppStore;
   return (
     <div>
-      {props.scene === Scene.TITLE && <TitleComponent />}
-      {props.scene === Scene.MATCHING && <MatchingComponent />}
+      {props.scene instanceof TitleStore && <TitleComponent />}
+      {props.scene instanceof MatchingStore && <MatchingComponent />}
     </div>
   );
 };
 
-export default inject(store => store)(observer(app));
+export default inject("app")(observer(app));

@@ -1,49 +1,53 @@
 import * as React from "react";
 import { inject, observer } from "mobx-react";
-import { Scene, SceneStore } from "@/declare";
-import Store, { Scene as MatchingScene } from "./store";
+import { Scene, RootStore, AppStore } from "@/declare";
+import SceneModel, { RobbyModel, CreateRoomModel } from "./store";
 
-const matching = ({ store }: any) => {
-  const props = store as SceneStore & { matching: Store };
+const matching = ({ app }: any) => {
+  const props = app as AppStore
+  const matching = app.scene as SceneModel
   return (
     <div>
       <h2>matching</h2>
-      { props.matching.scene === MatchingScene.ROOM_SELECT && <RoomListComponent /> }
-      { props.matching.scene === MatchingScene.CREATE_ROOM && <CreateRoomComponent /> }
+      { matching.scene instanceof RobbyModel && <RoomListComponent /> }
+      { matching.scene instanceof CreateRoomModel && <CreateRoomComponent /> }
     </div>
   );
 };
 
-const roomListComponent = ({ store }: any) => {
-  const props = store as SceneStore & { matching: Store };
+export default inject("app")(observer(matching));
+
+const roomListComponent = ({ app }: any) => {
+  const props = app as AppStore
+  const matching = props.scene as SceneModel
   return <div>
-    <button onClick={() => props.matching.createRoomForm()}>create room</button>
-      {props.matching.rooms && props.matching.rooms.map(room => <div key="room.id">
+    <button onClick={() => matching.createRoomForm()}>create room</button>
+      {matching.rooms && matching.rooms.map(room => <div key="room.id">
         <span>{room.name}</span>
         <span>
           ({0}/{room.maxUsers})
         </span>
         <span>{room.hasPassword ? "🔒" : ""}</span>
-        <button onClick={() => props.matching.joinRoom(room.id)}>join</button>
+        <button onClick={null}>join</button>
       </div>
     )}
     <button onClick={() => props.changeTitleScene(Scene.TITLE)}>back</button>
   </div>
 }
-const RoomListComponent = inject(store => store)(observer(roomListComponent))
+const RoomListComponent = inject("app")(observer(roomListComponent))
 
-const createRoomComponent = ({ store }: any) => {
-  const props = store as SceneStore & { matching: Store }
-  const createRoom = props.matching.createRoom
+const createRoomComponent = ({ app }: any) => {
+  const props = app as AppStore
+  const matching = props.scene as SceneModel
+  const createRoom = props.scene as CreateRoomModel
   return <div>
     <div>
       <label>
         部屋の名前:
         <input
         type="text"
-        value={createRoom.name}
+        value={matching.scene.name}
         onChange={(e) => { createRoom.name = e.target.value}}
-        autoComplete="off"
         />
       </label>
     </div>
@@ -54,16 +58,13 @@ const createRoomComponent = ({ store }: any) => {
         type="text"
         value={createRoom.password}
         onChange={(e) => { createRoom.password = e.target.value}}
-        autoComplete="nope"
         />
       </label>
     </div>
     <div>
-      <button onClick={() => props.matching.roomSelect()}>キャンセル</button>
-      <button onClick={() => props.matching.cresponseCreateRoom()}>OK</button>
+      <button onClick={() => matching.roomSelect()}>キャンセル</button>
+      <button onClick={() => null}>OK</button>
     </div>
   </div>
 }
-const CreateRoomComponent = inject(store => store)(observer(createRoomComponent))
-
-export default inject(store => store)(observer(matching));
+const CreateRoomComponent = inject("app")(observer(createRoomComponent))

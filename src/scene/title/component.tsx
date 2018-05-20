@@ -1,18 +1,18 @@
 import * as React from "react";
 import { inject, observer } from "mobx-react";
-import { Scene, SceneStore } from "@/declare";
+import { Scene, RootStore, AppStore } from "@/declare";
 import Store from "./store";
 
-const title = ({ store }: any) => {
-  const props = store as SceneStore;
+const title = ({ app }: any) => {
+  const props = app as AppStore;
   return (
     <div>
       <h2>title</h2>
-      <button onClick={() => props.changeMatchingScene(null)}>
+      <button onClick={() => props.changeMatchingScene()}>
         start
       </button>
     </div>
   );
 };
 
-export default inject(store => store)(observer(title));
+export default inject("app")(observer(title));
