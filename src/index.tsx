@@ -18,3 +18,12 @@ render(
   </Provider>,
   document.getElementById("app")
 );
+
+/* window.addEventListener('beforeunload', function(e) {
+  e.returnValue = 'ゲームを終了しますか？';
+}, false); */
+
+const user = localStorage.getItem("user");
+if (user != null) {
+  store.app.user.updateFromJson(user);
+}

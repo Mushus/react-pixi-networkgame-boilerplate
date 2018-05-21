@@ -1,10 +1,10 @@
 import * as React from "react";
 import {
-  Store as TitleStore,
+  SceneModel as TitleSceneModel,
   Component as TitleComponent
 } from "@/scene/title";
 import {
-  Store as MatchingStore,
+  SceneModel as MatchingSceneModel,
   Component as MatchingComponent
 } from "@/scene/matching";
 
@@ -14,9 +14,9 @@ import {
 export interface AppStore {
   scene: any;
   changeTitleScene(): void;
-  changeTitleScene(store: TitleStore): void;
+  changeTitleScene(store: TitleSceneModel): void;
   changeMatchingScene(): void;
-  changeMatchingScene(store: MatchingStore): void;
+  changeMatchingScene(store: MatchingSceneModel): void;
 }
 
 export interface RootStore {

@@ -6,11 +6,11 @@ import { RootStore, AppStore as IAppStore, SceneModel } from "@/declare";
 import { UserModel } from "@/model";
 import {
   Component as TitleComponent,
-  Store as TitleStore
+  SceneModel as TitleSceneModel
 } from "@/scene/title";
 import {
   Component as MatchingComponent,
-  Store as MatchingStore
+  SceneModel as MatchingSceneModel
 } from "@/scene/matching";
 
 /**
@@ -29,13 +29,13 @@ export class AppStore implements AppStore {
    * シーンを変更する
    */
   @action
-  changeTitleScene(store: TitleStore = new TitleStore()) {
+  changeTitleScene(store: TitleSceneModel = new TitleSceneModel()) {
     if (this.scene) this.scene.destroy();
     this.scene = store;
   }
 
   @action
-  changeMatchingScene(store = new MatchingStore()) {
+  changeMatchingScene(store = new MatchingSceneModel()) {
     if (this.scene) this.scene.destroy();
     this.scene = store;
   }
@@ -45,8 +45,8 @@ const app = ({ app }: any) => {
   const props = app as AppStore;
   return (
     <div>
-      {props.scene instanceof TitleStore && <TitleComponent />}
-      {props.scene instanceof MatchingStore && <MatchingComponent />}
+      {props.scene instanceof TitleSceneModel && <TitleComponent />}
+      {props.scene instanceof MatchingSceneModel && <MatchingComponent />}
     </div>
   );
 };

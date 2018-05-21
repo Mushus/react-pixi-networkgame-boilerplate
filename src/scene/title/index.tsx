@@ -1,4 +1,4 @@
 import Component from "./component";
-import Store from "./store";
+import SceneModel from "./store";
 
-export { Component, Store };
+export { Component, SceneModel };
