@@ -1,8 +1,6 @@
 import axios from 'axios'
 import { observable, action } from "mobx";
 import config from '@/config'
-import { NOTINITIALIZED } from 'dns';
-import { createCipher } from 'crypto';
 
 const msUrl = `${config.matchingServer.scheme}://${config.matchingServer.url}`
 
@@ -35,10 +33,23 @@ export default class SceneModel {
   @action createRoomForm() {
     this.scene = new CreateRoomModel()
   }
+
+  @action destroy() {
+    console.log("destroy matching")
+    this.socket.close()
+  }
+}
+
+export class PartyModel {
+
 }
 
 export class RobbyModel {
+  @observable isOpenInviteDialog = false;
 
+  @action setIsOpenInviteDialog(opened: boolean) {
+    this.isOpenInviteDialog = opened
+  }
 }
 
 export class CreateRoomModel {

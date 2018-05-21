@@ -2,7 +2,8 @@ import * as React from "react";
 import { Component } from "react";
 import { action, observable } from "mobx";
 import { inject, observer, Provider } from "mobx-react";
-import { Scene, RootStore, AppStore as IAppStore } from "@/declare";
+import { RootStore, AppStore as IAppStore, SceneModel } from "@/declare";
+import { UserModel } from "@/model";
 import {
   Component as TitleComponent,
   Store as TitleStore
@@ -12,10 +13,6 @@ import {
   Store as MatchingStore
 } from "@/scene/matching";
 
-export type AppStoreType = {
-  scene: Scene;
-} & AppStore;
-
 /**
  * アプリ全体のstore
  */
@@ -23,8 +20,8 @@ export class AppStore implements AppStore {
   /**
    * 現在のシーンを管理する
    */
-  @observable.ref scene: any
-
+  @observable.ref scene: SceneModel
+  @observable user: UserModel
   constructor () {
     this.changeTitleScene()
   }
@@ -32,11 +29,12 @@ export class AppStore implements AppStore {
    * シーンを変更する
    */
   @action changeTitleScene(store: TitleStore = new TitleStore()) {
+    if (this.scene) this.scene.destroy()
     this.scene = store
   }
 
   @action changeMatchingScene(store = new MatchingStore()) {
-    console.log(this)
+    if (this.scene) this.scene.destroy()
     this.scene = store
   }
 }

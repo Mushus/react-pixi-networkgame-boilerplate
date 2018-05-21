@@ -9,14 +9,6 @@ import {
 } from "@/scene/matching";
 
 /**
- * シーン
- */
-export enum Scene {
-  TITLE = "title",
-  MATCHING = "matching"
-}
-
-/**
  * シーンが持ってるstore
  */
 export interface AppStore {
@@ -29,4 +21,8 @@ export interface AppStore {
 
 export interface RootStore {
   store: AppStore
+}
+
+export interface SceneModel {
+  destroy(): void
 }

@@ -1,7 +1,7 @@
 import * as React from "react";
 import { inject, observer } from "mobx-react";
-import { Scene, RootStore, AppStore } from "@/declare";
-import SceneModel, { RobbyModel, CreateRoomModel } from "./store";
+import { RootStore, AppStore } from "@/declare";
+import SceneModel, { PartyModel, RobbyModel, CreateRoomModel } from "./store";
 
 const matching = ({ app }: any) => {
   const props = app as AppStore
@@ -9,7 +9,7 @@ const matching = ({ app }: any) => {
   return (
     <div>
       <h2>matching</h2>
-      { matching.scene instanceof RobbyModel && <RoomListComponent /> }
+      { matching.scene instanceof RobbyModel && <RobbyComponent /> }
       { matching.scene instanceof CreateRoomModel && <CreateRoomComponent /> }
       { matching.networkClosed && <div>
         <p>ネットワークが切断されました</p>
@@ -21,12 +21,15 @@ const matching = ({ app }: any) => {
 
 export default inject("app")(observer(matching));
 
-const roomListComponent = ({ app }: any) => {
+const robbyComponent = ({ app }: any) => {
   const props = app as AppStore
   const matching = props.scene as SceneModel
+  const robby = matching.scene as RobbyModel
   return <div>
+    <button onClick={() => props.changeTitleScene()}>back</button>
     <button onClick={() => matching.createRoomForm()}>create room</button>
-      {matching.rooms && matching.rooms.map(room => <div key="room.id">
+    {matching.rooms && matching.rooms.map(room =>
+      <div key="room.id">
         <span>{room.name}</span>
         <span>
           ({0}/{room.maxUsers})
@@ -35,10 +38,21 @@ const roomListComponent = ({ app }: any) => {
         <button onClick={null}>join</button>
       </div>
     )}
-    <button onClick={() => props.changeTitleScene(Scene.TITLE)}>back</button>
+    <div>
+      <h3>パーティ</h3>
+      <button onClick={() => robby.setIsOpenInviteDialog(true)}>パーティに招待</button>
+      {
+        robby.isOpenInviteDialog && <div>
+          <label>パーティへの招待URL
+            <input type="text" readOnly={true} value="TODO" />
+          </label>
+          <button onClick={() => robby.setIsOpenInviteDialog(false)}>ok</button>
+        </div>
+      }
+    </div>
   </div>
 }
-const RoomListComponent = inject("app")(observer(roomListComponent))
+const RobbyComponent = inject("app")(observer(robbyComponent))
 
 const createRoomComponent = ({ app }: any) => {
   const props = app as AppStore

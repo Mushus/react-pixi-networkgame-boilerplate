@@ -1,6 +1,6 @@
 import * as React from "react";
 import { inject, observer } from "mobx-react";
-import { Scene, RootStore, AppStore } from "@/declare";
+import { AppStore } from "@/declare";
 import Store from "./store";
 
 const title = ({ app }: any) => {
