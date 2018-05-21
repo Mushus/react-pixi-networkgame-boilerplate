@@ -12,7 +12,7 @@ import {
  * シーンが持ってるstore
  */
 export interface AppStore {
-  scene: any
+  scene: any;
   changeTitleScene(): void;
   changeTitleScene(store: TitleStore): void;
   changeMatchingScene(): void;
@@ -20,9 +20,9 @@ export interface AppStore {
 }
 
 export interface RootStore {
-  store: AppStore
+  store: AppStore;
 }
 
 export interface SceneModel {
-  destroy(): void
+  destroy(): void;
 }

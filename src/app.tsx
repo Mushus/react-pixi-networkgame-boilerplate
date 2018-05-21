@@ -20,22 +20,24 @@ export class AppStore implements AppStore {
   /**
    * 現在のシーンを管理する
    */
-  @observable.ref scene: SceneModel
-  @observable user: UserModel
-  constructor () {
-    this.changeTitleScene()
+  @observable.ref scene: SceneModel;
+  @observable user: UserModel;
+  constructor() {
+    this.changeTitleScene();
   }
   /**
    * シーンを変更する
    */
-  @action changeTitleScene(store: TitleStore = new TitleStore()) {
-    if (this.scene) this.scene.destroy()
-    this.scene = store
+  @action
+  changeTitleScene(store: TitleStore = new TitleStore()) {
+    if (this.scene) this.scene.destroy();
+    this.scene = store;
   }
 
-  @action changeMatchingScene(store = new MatchingStore()) {
-    if (this.scene) this.scene.destroy()
-    this.scene = store
+  @action
+  changeMatchingScene(store = new MatchingStore()) {
+    if (this.scene) this.scene.destroy();
+    this.scene = store;
   }
 }
 

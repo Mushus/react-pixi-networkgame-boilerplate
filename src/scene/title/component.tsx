@@ -8,9 +8,7 @@ const title = ({ app }: any) => {
   return (
     <div>
       <h2>title</h2>
-      <button onClick={() => props.changeMatchingScene()}>
-        start
-      </button>
+      <button onClick={() => props.changeMatchingScene()}>start</button>
     </div>
   );
 };

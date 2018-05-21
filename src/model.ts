@@ -1,5 +1,5 @@
 import { observable } from "mobx";
 
 export class UserModel {
-  @observable name: string
+  @observable name: string;
 }
