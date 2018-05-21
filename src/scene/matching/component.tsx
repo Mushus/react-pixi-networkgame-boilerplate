@@ -76,6 +76,7 @@ const publicMatchComponent = ({ app }: any) => {
           matching.party.users &&
           matching.party.users.map(user => <div>{user.name}</div>)}
       </div>
+      <button onClick={() => matching.transitionRobby()}>戻る</button>
     </div>
   );
 };
@@ -93,6 +94,7 @@ const privateMatchComponent = ({ app }: any) => {
           matching.party.users &&
           matching.party.users.map(user => <div>{user.name}</div>)}
       </div>
+      <button onClick={() => matching.transitionRobby()}>戻る</button>
     </div>
   );
 };
