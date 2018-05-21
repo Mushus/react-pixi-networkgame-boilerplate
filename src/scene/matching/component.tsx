@@ -45,23 +45,34 @@ const robbyComponent = ({ app }: any) => {
       <button onClick={() => matching.transitionPrivateMatch()}>
         プライベートマッチ
       </button>
-      <div>
-        <h3>パーティ</h3>
-        <button onClick={() => robby.setIsOpenInviteDialog(true)}>
-          パーティに招待
-        </button>
-        {robby.isOpenInviteDialog && (
-          <div>
-            <label>
-              パーティへの招待URL
-              <input type="text" readOnly={true} value="TODO" />
-            </label>
-            <button onClick={() => robby.setIsOpenInviteDialog(false)}>
-              ok
+      {matching.party && (
+        <div>
+          <h3>パーティ</h3>
+          <div>{matching.party.id}</div>
+          <div>{'' + matching.party.isPrivate}</div>
+          <div>{'' + matching.party.maxUsers}</div>
+          {!robby.isOpenInviteDialog && (
+            <button onClick={() => robby.setIsOpenInviteDialog(true)}>
+              パーティに招待
             </button>
-          </div>
-        )}
-      </div>
+          )}
+          {robby.isOpenInviteDialog && (
+            <div>
+              <label>
+                パーティへの招待URL
+                <input
+                  type="text"
+                  readOnly={true}
+                  value={`${location.href}?invite=${matching.party.id}`}
+                />
+              </label>
+              <button onClick={() => robby.setIsOpenInviteDialog(false)}>
+                共有を停止
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
