@@ -1,7 +1,7 @@
-import * as React from "react";
-import { inject, observer } from "mobx-react";
-import { AppStore } from "@/declare";
-import Store from "./store";
+import * as React from 'react';
+import { inject, observer } from 'mobx-react';
+import { AppStore } from '@/declare';
+import Store from './store';
 
 const title = ({ app }: any) => {
   const props = app as AppStore;
@@ -16,8 +16,12 @@ const title = ({ app }: any) => {
         onChange={e => characreate.changeUserName(e.target.value)}
       />
       <button
-        onClick={() => props.changeMatchingScene()}
-        disabled={characreate.user.name != ""}
+        onClick={() => {
+          console.log(props);
+          props.updateUser(characreate.user);
+          props.transitionMatchingScene();
+        }}
+        disabled={characreate.user.name == ''}
       >
         OK
       </button>
@@ -25,4 +29,4 @@ const title = ({ app }: any) => {
   );
 };
 
-export default inject("app")(observer(title));
+export default inject('app')(observer(title));

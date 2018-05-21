@@ -1,22 +1,31 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   SceneModel as TitleSceneModel,
   Component as TitleComponent
-} from "@/scene/title";
+} from '@/scene/title';
 import {
   SceneModel as MatchingSceneModel,
   Component as MatchingComponent
-} from "@/scene/matching";
+} from '@/scene/matching';
+import {
+  SceneModel as CharaCreateSceneModel,
+  Component as CharaCreateComponent
+} from '@/scene/characreate';
+import { UserModel } from '@/model';
 
 /**
  * シーンが持ってるstore
  */
 export interface AppStore {
   scene: any;
-  changeTitleScene(): void;
-  changeTitleScene(store: TitleSceneModel): void;
-  changeMatchingScene(): void;
-  changeMatchingScene(store: MatchingSceneModel): void;
+  user: UserModel;
+  transitionTitleScene(): void;
+  transitionTitleScene(store: TitleSceneModel): void;
+  transitionMatchingScene(): void;
+  transitionMatchingScene(store: MatchingSceneModel): void;
+  transitionCharaCreate(): void;
+  transitionCharaCreate(store: CharaCreateSceneModel): void;
+  updateUser(um: UserModel): void;
 }
 
 export interface RootStore {
@@ -26,3 +35,5 @@ export interface RootStore {
 export interface SceneModel {
   destroy(): void;
 }
+
+export const STORAGE_KEY_USER = 'user';

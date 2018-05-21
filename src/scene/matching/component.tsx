@@ -1,12 +1,12 @@
-import * as React from "react";
-import { inject, observer } from "mobx-react";
-import { RootStore, AppStore } from "@/declare";
+import * as React from 'react';
+import { inject, observer } from 'mobx-react';
+import { RootStore, AppStore } from '@/declare';
 import SceneModel, {
   PartyModel,
   RobbyModel,
   PublicMatchModel,
   PrivateMatchModel
-} from "./store";
+} from './store';
 
 const matching = ({ app }: any) => {
   const props = app as AppStore;
@@ -14,19 +14,20 @@ const matching = ({ app }: any) => {
   return (
     <div>
       <h2>matching</h2>
+      <p>{props.user.name}さんようこそ</p>
       {matching.scene instanceof RobbyModel && <RobbyComponent />}
       {matching.scene instanceof PublicMatchModel && <PublicMatchComponent />}
       {matching.scene instanceof PrivateMatchModel && <PrivateMatchComponent />}
       {matching.networkClosed && (
         <div>
           <p>ネットワークが切断されました</p>
-          <button onClick={() => props.changeTitleScene()}>戻る</button>
+          <button onClick={() => props.transitionTitleScene()}>戻る</button>
         </div>
       )}
     </div>
   );
 };
-export default inject("app")(observer(matching));
+export default inject('app')(observer(matching));
 
 const robbyComponent = ({ app }: any) => {
   const props = app as AppStore;
@@ -35,7 +36,9 @@ const robbyComponent = ({ app }: any) => {
   return (
     <div>
       <h3>ロビー</h3>
-      <button onClick={() => props.changeTitleScene()}>タイトルに戻る</button>
+      <button onClick={() => props.transitionTitleScene()}>
+        タイトルに戻る
+      </button>
       <button onClick={() => matching.transitionPublicMatch()}>
         公開マッチ
       </button>
@@ -63,7 +66,7 @@ const robbyComponent = ({ app }: any) => {
   );
 };
 
-const RobbyComponent = inject("app")(observer(robbyComponent));
+const RobbyComponent = inject('app')(observer(robbyComponent));
 
 const publicMatchComponent = ({ app }: any) => {
   const props = app as AppStore;
@@ -81,7 +84,7 @@ const publicMatchComponent = ({ app }: any) => {
   );
 };
 
-const PublicMatchComponent = inject("app")(observer(publicMatchComponent));
+const PublicMatchComponent = inject('app')(observer(publicMatchComponent));
 
 const privateMatchComponent = ({ app }: any) => {
   const props = app as AppStore;
@@ -99,4 +102,4 @@ const privateMatchComponent = ({ app }: any) => {
   );
 };
 
-const PrivateMatchComponent = inject("app")(observer(privateMatchComponent));
+const PrivateMatchComponent = inject('app')(observer(privateMatchComponent));

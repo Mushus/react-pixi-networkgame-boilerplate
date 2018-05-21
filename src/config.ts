@@ -7,17 +7,17 @@ interface Config {
 
 let config = {
   matchingServer: {
-    scheme: "http",
-    url: "localhost:8090/hoge"
+    scheme: 'http',
+    url: 'localhost:8090/hoge'
   }
 };
 
-if (process.env.NODE_ENV === "production") {
+if (process.env.NODE_ENV === 'production') {
   config = {
     ...config,
     matchingServer: {
-      scheme: "http",
-      url: "localhost:8090/hoge"
+      scheme: 'http',
+      url: 'localhost:8090/hoge'
     }
   };
 }

@@ -1,6 +1,6 @@
-import axios from "axios";
-import { observable, action } from "mobx";
-import config from "@/config";
+import axios from 'axios';
+import { observable, action } from 'mobx';
+import config from '@/config';
 
 const msUrl = `${config.matchingServer.scheme}://${config.matchingServer.url}`;
 
@@ -48,7 +48,7 @@ export default class SceneModel {
 
   @action
   destroy() {
-    console.log("destroy matching");
+    console.log('destroy matching');
     this.socket.close();
   }
 }

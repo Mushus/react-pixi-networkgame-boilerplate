@@ -1,7 +1,7 @@
-import { observable, action } from "mobx";
+import { observable, action } from 'mobx';
 
 export class UserModel {
-  @observable name: string;
+  @observable name: string = '';
   @action
   updateFromJson(json: string) {
     let user = JSON.parse(json);

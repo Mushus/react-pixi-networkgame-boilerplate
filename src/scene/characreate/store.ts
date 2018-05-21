@@ -1,7 +1,12 @@
-import { observable, action } from "mobx";
+import { observable, action } from 'mobx';
+import { UserModel } from '@/model';
 
 export default class SceneModel {
-  @observable user = new UserModel();
+  @observable user: UserModel;
+
+  constructor(user = new UserModel()) {
+    this.user = user;
+  }
 
   @action
   changeUserName(name: string) {
@@ -10,8 +15,4 @@ export default class SceneModel {
 
   @action
   destroy() {}
-}
-
-class UserModel {
-  @observable name: string = "";
 }
