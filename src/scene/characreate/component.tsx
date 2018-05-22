@@ -17,9 +17,13 @@ const title = ({ app }: any) => {
       />
       <button
         onClick={() => {
-          console.log(props);
           props.updateUser(characreate.user);
-          props.transitionMatchingScene();
+          console.log(props);
+          if (props.invite != null) {
+            props.transitionMatchingScene();
+          } else {
+            props.transitionTitleScene();
+          }
         }}
         disabled={characreate.user.name == ''}
       >

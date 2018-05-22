@@ -19,6 +19,7 @@ import { UserModel } from '@/model';
 export interface AppStore {
   scene: any;
   user: UserModel;
+  invite: string;
   transitionTitleScene(): void;
   transitionTitleScene(store: TitleSceneModel): void;
   transitionMatchingScene(): void;

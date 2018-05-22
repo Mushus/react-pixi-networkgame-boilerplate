@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { observable, action, runInAction } from 'mobx';
 import config from '@/config';
-import ServerConnection, { ResponseCreateRoom } from '@/serverConnection';
+import ServerConnection, { ResponseParty } from '@/serverConnection';
 
 const msUrl = `${config.matchingServer.scheme}://${config.matchingServer.url}`;
 
@@ -15,19 +15,23 @@ export default class SceneModel {
   // websocket
   serverConnection: ServerConnection = null;
 
-  constructor() {
-    this.init();
+  constructor(invite: string = null) {
+    this.init(invite);
     this.transitionRobby();
   }
 
   @action
-  init() {
+  init(invite: string) {
     const conn = new ServerConnection(
       `ws://${config.matchingServer.url}/matching`
     );
     conn.onopen = message => {
-      // 初期状態でパーティを作成
-      this.createParty();
+      if (invite == null) {
+        // 初期状態でパーティを作成
+        this.createParty();
+      } else {
+        this.joinParty(invite);
+      }
     };
     conn.onclose = action(message => {
       this.networkClosed = true;
@@ -35,17 +39,22 @@ export default class SceneModel {
 
     this.serverConnection = conn;
   }
+
   @action
   async createParty() {
     const conn = this.serverConnection;
-    const party = (await conn.createParty()) as ResponseCreateRoom;
-    console.log(party);
-    const pm = new PartyModel();
-    pm.id = party.id;
-    pm.isPrivate = party.isPrivate;
-    pm.maxUsers = party.maxUsers;
+    const party = (await conn.createParty()) as ResponseParty;
     runInAction(() => {
-      this.party = pm;
+      this.party = new PartyModel(party);
+    });
+  }
+
+  @action
+  async joinParty(partyId: string) {
+    const conn = this.serverConnection;
+    const party = await conn.getParty(partyId);
+    runInAction(() => {
+      this.party = new PartyModel(party);
     });
   }
 
@@ -88,7 +97,25 @@ export class PartyModel {
   @observable id: string;
   @observable isPrivate: boolean;
   @observable maxUsers: number;
+  @observable userCount: number;
   @observable users: UserModel[];
+
+  constructor({
+    id,
+    isPrivate,
+    maxUsers,
+    userCount
+  }: {
+    id: string;
+    isPrivate: boolean;
+    maxUsers: number;
+    userCount: number;
+  }) {
+    this.id = id;
+    this.isPrivate = isPrivate;
+    this.maxUsers = maxUsers;
+    this.userCount = userCount;
+  }
 }
 
 export class UserModel {

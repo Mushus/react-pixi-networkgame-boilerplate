@@ -50,7 +50,9 @@ const robbyComponent = ({ app }: any) => {
           <h3>パーティ</h3>
           <div>{matching.party.id}</div>
           <div>{'' + matching.party.isPrivate}</div>
-          <div>{'' + matching.party.maxUsers}</div>
+          <div>
+            ({'' + matching.party.userCount}/{'' + matching.party.maxUsers})
+          </div>
           {!robby.isOpenInviteDialog && (
             <button onClick={() => robby.setIsOpenInviteDialog(true)}>
               パーティに招待

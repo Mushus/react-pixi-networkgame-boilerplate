@@ -4,6 +4,7 @@ import { configure } from 'mobx';
 import { Provider } from 'mobx-react';
 import App, { AppStore } from '@/app';
 import { STORAGE_KEY_USER, SEARCH_PARAM_INVITE } from '@/declare';
+import { SceneModel as MatchingSceneModel } from '@/scene/matching';
 
 configure({
   enforceActions: true
@@ -37,6 +38,10 @@ if (urlParams.has(SEARCH_PARAM_INVITE)) {
 const user = localStorage.getItem(STORAGE_KEY_USER);
 if (user != null) {
   store.app.user.updateFromJson(user);
+  console.log(store.app.invite);
+  if (store.app.invite != null) {
+    store.app.transitionMatchingScene(new MatchingSceneModel(store.app.invite));
+  }
 } else {
   store.app.transitionCharaCreate();
 }

@@ -1,7 +1,9 @@
 import { parse } from 'querystring';
 
 export enum Action {
-  CREATE_PARTY = 'create_party'
+  GET_PARTY = 'get_party',
+  CREATE_PARTY = 'create_party',
+  JOIN_PARTY = 'join_party'
 }
 
 export enum Status {
@@ -21,10 +23,11 @@ export interface ResponseJSON {
   id: string;
 }
 
-export interface ResponseCreateRoom {
+export interface ResponseParty {
   id: string;
   isPrivate: boolean;
   maxUsers: number;
+  userCount: number;
 }
 
 export default class ServerConnection {
@@ -128,6 +131,18 @@ export default class ServerConnection {
     return (await this.send(Action.CREATE_PARTY, {
       isPrivate: isPrivate,
       maxUsers: maxUsers
-    })) as ResponseCreateRoom;
+    })) as ResponseParty;
+  }
+
+  async getParty(partyId: string) {
+    return (await this.send(Action.GET_PARTY, {
+      partyId
+    })) as ResponseParty;
+  }
+
+  async joinParty(partyId: string) {
+    return (await this.send(Action.JOIN_PARTY, {
+      partyId
+    })) as ResponseParty;
   }
 }
