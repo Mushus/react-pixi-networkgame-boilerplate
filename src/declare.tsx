@@ -37,3 +37,4 @@ export interface SceneModel {
 }
 
 export const STORAGE_KEY_USER = 'user';
+export const SEARCH_PARAM_INVITE = 'invite';

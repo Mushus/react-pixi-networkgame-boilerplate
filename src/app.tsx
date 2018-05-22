@@ -31,6 +31,10 @@ export class AppStore implements AppStore {
    */
   @observable.ref scene: SceneModel;
   @observable user: UserModel = new UserModel();
+  /**
+   * 招待されたパーティid
+   */
+  @observable invite: string;
   constructor() {
     this.transitionTitleScene();
   }
