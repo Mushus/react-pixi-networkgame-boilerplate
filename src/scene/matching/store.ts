@@ -1,6 +1,7 @@
 import axios from 'axios';
-import { observable, action } from 'mobx';
+import { observable, action, runInAction } from 'mobx';
 import config from '@/config';
+import ServerConnection, { ResponseCreateRoom } from '@/serverConnection';
 
 const msUrl = `${config.matchingServer.scheme}://${config.matchingServer.url}`;
 
@@ -12,7 +13,7 @@ export default class SceneModel {
   //パーティ
   @observable.ref party: PartyModel;
   // websocket
-  socket: WebSocket = null;
+  serverConnection: ServerConnection = null;
 
   constructor() {
     this.init();
@@ -21,50 +22,31 @@ export default class SceneModel {
 
   @action
   init() {
-    const socket = new WebSocket(`ws://${config.matchingServer.url}/matching`);
-    socket.onmessage = message => {
-      const json = JSON.parse(message.data);
-      if (json.status == 'ng') {
-        console.log(json);
-        return;
-      }
-      switch (json.action) {
-        case 'create_party':
-          this.responseCreateParty(json.param);
-          break;
-      }
-      console.log(message.data);
+    const conn = new ServerConnection(
+      `ws://${config.matchingServer.url}/matching`
+    );
+    conn.onopen = message => {
+      // 初期状態でパーティを作成
+      this.createParty();
     };
-    socket.onclose = action(message => {
+    conn.onclose = action(message => {
       this.networkClosed = true;
     });
-    socket.onopen = action(message => {
-      this.requestCreateParty();
-    });
-    this.socket = socket;
-  }
 
-  requestCreateParty() {
-    if (!this.socket || this.socket.readyState != WebSocket.OPEN) return;
-    this.socket.send(
-      JSON.stringify({
-        action: 'create_party',
-        param: {
-          isPrivate: true,
-          maxUsers: 0
-        }
-      })
-    );
+    this.serverConnection = conn;
   }
-
   @action
-  responseCreateParty(param: any) {
+  async createParty() {
+    const conn = this.serverConnection;
+    const party = (await conn.createParty()) as ResponseCreateRoom;
+    console.log(party);
     const pm = new PartyModel();
-    pm.id = param.id;
-    pm.isPrivate = param.isPrivate;
-    pm.maxUsers = param.maxUsers;
-    this.party = pm;
-    console.log(pm);
+    pm.id = party.id;
+    pm.isPrivate = party.isPrivate;
+    pm.maxUsers = party.maxUsers;
+    runInAction(() => {
+      this.party = pm;
+    });
   }
 
   @action
@@ -85,7 +67,7 @@ export default class SceneModel {
   @action
   destroy() {
     console.log('destroy matching');
-    this.socket.close();
+    this.serverConnection.close();
   }
 }
 
