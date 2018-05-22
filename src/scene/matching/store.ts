@@ -16,6 +16,8 @@ export default class SceneModel {
   // websocket
   serverConnection: ServerConnection = null;
 
+  playerConnection: Peer.Instance;
+
   constructor(invite: string = null) {
     this.init(invite);
     this.transitionRobby();
@@ -23,50 +25,97 @@ export default class SceneModel {
 
   @action
   init(invite: string) {
-    const conn = new ServerConnection(
-      `ws://${config.matchingServer.url}/matching`
-    );
-    conn.onopen = message => {
-      if (invite == null) {
-        // 初期状態でパーティを作成
-        this.createParty();
+    (async () => {
+      const isInvite = invite != null;
+      const initiator = invite == null;
+      const offer = await this.createPlayerConnection(initiator);
+      const conn = await this.createServerConnection();
+      if (isInvite) {
+        await this.joinParty(invite);
       } else {
-        this.joinParty(invite);
+        // 初期状態でパーティを作成
+        await this.createParty(offer);
       }
-    };
-    conn.onclose = action(message => {
-      this.networkClosed = true;
-    });
+    })();
+  }
 
-    this.serverConnection = conn;
+  /**
+   * P2Pコネクションを用意する
+   */
+  @action
+  createPlayerConnection(initiator: boolean) {
+    return new Promise<{}>(resolve => {
+      const peer = new Peer({ initiator: initiator });
+      peer.on('error', data => {
+        console.log('error', data);
+      });
+      peer.on('signal', data => {
+        console.log('signal', data);
+        if (data.type == 'offer') {
+          resolve(data);
+        }
+        if (data.type == 'answer') {
+          peer.signal(data);
+        }
+      });
+      peer.on('connect', data => {
+        console.log('connect', data);
+      });
+      peer.on('data', data => {
+        console.log('data', data);
+      });
+      runInAction(() => {
+        this.playerConnection = peer;
+      });
+      if (!initiator) {
+        resolve();
+      }
+    });
+  }
+
+  /**
+   * サーバーとのコネクションを用意する
+   */
+  @action
+  createServerConnection() {
+    return new Promise(resolve => {
+      const conn = new ServerConnection(
+        `ws://${config.matchingServer.url}/matching`
+      );
+      conn.onopen = message => {
+        resolve(conn);
+      };
+      conn.onclose = action(message => {
+        this.networkClosed = true;
+      });
+
+      runInAction(() => {
+        this.serverConnection = conn;
+      });
+    });
   }
 
   @action
-  async createParty() {
+  async createParty(offer: any) {
     const conn = this.serverConnection;
-    const party = (await conn.createParty()) as ResponseParty;
+    const party = (await conn.createParty(offer)) as ResponseParty;
     runInAction(() => {
       this.party = new PartyModel(party);
-    });
-    const peer = new Peer({ initiator: true });
-    peer.on('error', data => {
-      console.log(data);
-    });
-    peer.on('signal', data => {
-      console.log(data);
-    });
-    peer.on('connect', data => {
-      console.log(data);
-    });
-    peer.on('data', data => {
-      console.log(data);
     });
   }
 
   @action
   async joinParty(partyId: string) {
-    const conn = this.serverConnection;
-    const party = await conn.getParty(partyId);
+    const party = await this.getParty(partyId);
+    const offer = JSON.parse(party.ownerOffer);
+    this.playerConnection.signal(offer);
+    return party;
+  }
+
+  @action
+  async getParty(partyId: string) {
+    const party = await this.serverConnection.getParty(partyId);
+    return party;
   }
 
   @action
@@ -88,6 +137,7 @@ export default class SceneModel {
   destroy() {
     console.log('destroy matching');
     this.serverConnection.close();
+    this.playerConnection.destroy();
   }
 }
 
@@ -106,6 +156,7 @@ export class PrivateMatchModel {}
 
 export class PartyModel {
   @observable id: string;
+  @observable ownerOffer: string;
   @observable isPrivate: boolean;
   @observable maxUsers: number;
   @observable userCount: number;
@@ -115,17 +166,20 @@ export class PartyModel {
     id,
     isPrivate,
     maxUsers,
-    userCount
+    userCount,
+    ownerOffer
   }: {
     id: string;
     isPrivate: boolean;
     maxUsers: number;
     userCount: number;
+    ownerOffer: string;
   }) {
     this.id = id;
     this.isPrivate = isPrivate;
     this.maxUsers = maxUsers;
     this.userCount = userCount;
+    this.ownerOffer = ownerOffer;
   }
 }
 

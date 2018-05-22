@@ -28,6 +28,7 @@ export interface ResponseParty {
   isPrivate: boolean;
   maxUsers: number;
   userCount: number;
+  ownerOffer: string;
 }
 
 export default class ServerConnection {
@@ -127,8 +128,9 @@ export default class ServerConnection {
    * @param isPrivate boolean パーティへの参加を禁止します
    * @param maxUsers int ユーザー参加制限 0 以下は無制限
    */
-  async createParty(isPrivate = true, maxUsers = 0) {
+  async createParty(offer: any, isPrivate = true, maxUsers = 0) {
     return (await this.send(Action.CREATE_PARTY, {
+      ownerOffer: JSON.stringify(offer),
       isPrivate: isPrivate,
       maxUsers: maxUsers
     })) as ResponseParty;
