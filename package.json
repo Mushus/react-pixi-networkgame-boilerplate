@@ -4,6 +4,8 @@
     "main": "index.js",
     "license": "MIT",
     "dependencies": {
+        "@types/simple-peer": "^6.1.4",
+        "add": "^2.0.6",
         "axios": "^0.18.0",
         "mobx": "^4.2.1",
         "mobx-react": "^5.1.2",
@@ -12,7 +14,9 @@
         "react": "^16.3.2",
         "react-dom": "^16.3.2",
         "react-mobx": "^0.0.3",
-        "react-pixi-fiber": "^0.4.4"
+        "react-pixi-fiber": "^0.4.4",
+        "simple-peer": "^9.1.1",
+        "yarn": "^1.6.0"
     },
     "devDependencies": {
         "@types/react": "^16.3.14",

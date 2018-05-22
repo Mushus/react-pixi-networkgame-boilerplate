@@ -25,7 +25,7 @@ render(
   e.returnValue = 'ゲームを終了しますか？';
 }, false); */
 
-const urlParams = new URLSearchParams(window.location.search);
+const urlParams = new URLSearchParams(location.search);
 if (urlParams.has(SEARCH_PARAM_INVITE)) {
   store.app.invite = urlParams.get(SEARCH_PARAM_INVITE);
   // urlパラメータを抜く
@@ -38,7 +38,7 @@ if (urlParams.has(SEARCH_PARAM_INVITE)) {
 const user = localStorage.getItem(STORAGE_KEY_USER);
 if (user != null) {
   store.app.user.updateFromJson(user);
-  console.log(store.app.invite);
+  // 招待されてたらすぐさまマッチング開始する
   if (store.app.invite != null) {
     store.app.transitionMatchingScene(new MatchingSceneModel(store.app.invite));
   }

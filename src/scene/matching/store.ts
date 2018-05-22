@@ -2,6 +2,7 @@ import axios from 'axios';
 import { observable, action, runInAction } from 'mobx';
 import config from '@/config';
 import ServerConnection, { ResponseParty } from '@/serverConnection';
+import * as Peer from 'simple-peer';
 
 const msUrl = `${config.matchingServer.scheme}://${config.matchingServer.url}`;
 
@@ -47,15 +48,25 @@ export default class SceneModel {
     runInAction(() => {
       this.party = new PartyModel(party);
     });
+    const peer = new Peer({ initiator: true });
+    peer.on('error', data => {
+      console.log(data);
+    });
+    peer.on('signal', data => {
+      console.log(data);
+    });
+    peer.on('connect', data => {
+      console.log(data);
+    });
+    peer.on('data', data => {
+      console.log(data);
+    });
   }
 
   @action
   async joinParty(partyId: string) {
     const conn = this.serverConnection;
     const party = await conn.getParty(partyId);
-    runInAction(() => {
-      this.party = new PartyModel(party);
-    });
   }
 
   @action
