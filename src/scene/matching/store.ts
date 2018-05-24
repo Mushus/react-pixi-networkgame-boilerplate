@@ -26,7 +26,6 @@ export default class SceneModel {
     (async () => {
       const isInvite = invite != null;
       const conn = await this.createServerConnection(userName);
-      const playerConn = await this.createPlayerConnection(isInvite)
       if (isInvite) {
         await this.joinParty(invite);
       } else {
@@ -87,13 +86,17 @@ export default class SceneModel {
       runInAction(() => {
         this.serverConnection = conn;
       });
+      conn.onModifyParty = (party) => {
+        runInAction(() => {
+          this.party = party
+        });
+      }
     });
   }
 
   @action
   async createParty() {
-    const conn = this.serverConnection;
-    const party = (await conn.createParty()) as ResponseParty;
+    const party = await this.serverConnection.createParty() as ResponseParty;
     runInAction(() => {
       this.party = new PartyModel(party);
     });
@@ -101,9 +104,10 @@ export default class SceneModel {
 
   @action
   async joinParty(partyId: string) {
-    const party = await this.serverConnection.joinParty(partyId);
-    //const offer = JSON.parse(party.ownerOffer);
-    //this.playerConnection.signal(offer);
+    const party = await this.serverConnection.joinParty(partyId)  as ResponseParty;
+    runInAction(() => {
+      this.party = new PartyModel(party);
+    });
   }
 
   @action
@@ -153,7 +157,7 @@ export class PartyModel {
   @observable owner: UserModel
   @observable isPrivate: boolean;
   @observable maxUsers: number;
-  @observable users: UserModel[];
+  @observable.ref users: UserModel[];
 
   constructor({
     id,
@@ -169,14 +173,18 @@ export class PartyModel {
     maxUsers: number;
   }) {
     this.id = id;
-    this.owner = owner;
+    this.owner = new UserModel(owner);
     this.isPrivate = isPrivate;
     this.maxUsers = maxUsers;
-    this.users = users;
+    this.users = users.map(user => new UserModel(user));
   }
 }
 
 export class UserModel {
   @observable id: string;
   @observable name: string;
+
+  constructor({ name }: { name:string }) {
+    this.name = name
+  }
 }

@@ -33,6 +33,7 @@ const robbyComponent = ({ app }: any) => {
   const props = app as AppStore;
   const matching = props.scene as SceneModel;
   const robby = matching.scene as RobbyModel;
+  console.log(matching.party)
   return (
     <div>
       <h3>ロビー</h3>
@@ -48,10 +49,12 @@ const robbyComponent = ({ app }: any) => {
       {matching.party && (
         <div>
           <h3>パーティ</h3>
-          <div>{matching.party.id}</div>
-          <div>{'' + matching.party.isPrivate}</div>
           <div>
-            ({'' + matching.party.users.length}/{'' + matching.party.maxUsers})
+            { matching.party.users.map(user => <div key={user.name}>{user.name}</div>) }
+          </div>
+          <div>{matching.party.isPrivate? "非公開" : "公開"}</div>
+          <div>
+            ({'' + matching.party.users.length}/{matching.party.maxUsers == 0? "∞" : matching.party.maxUsers})
           </div>
           {!robby.isOpenInviteDialog && (
             <button onClick={() => robby.setIsOpenInviteDialog(true)}>

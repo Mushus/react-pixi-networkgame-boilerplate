@@ -1,9 +1,11 @@
 import * as QueryString from 'query-string'
+import { PartyModel } from '@/scene/matching/store';
 
 export enum Action {
   GET_PARTY = 'get_party',
   CREATE_PARTY = 'create_party',
-  JOIN_PARTY = 'join_party'
+  JOIN_PARTY = 'join_party',
+  Modify_PARTY = "modify_party",
 }
 
 export enum Status {
@@ -51,6 +53,8 @@ export default class ServerConnection {
    * コネクションが閉じた時に呼ばれるイベント
    */
   onclose: (e: Event) => void;
+
+  onModifyParty: (party: PartyModel) => void;
 
   /**
    * リクエストID
@@ -119,6 +123,11 @@ export default class ServerConnection {
    * 受け取ったjsonのイベントを発行する
    */
   callRecieve(response: ResponseJSON) {
+    switch(response.action) {
+      case 'modify_party':
+      this.onModifyParty && this.onModifyParty(new PartyModel(response.param))
+      break;
+    }
     console.log(response);
   }
 
