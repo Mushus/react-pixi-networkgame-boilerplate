@@ -1,4 +1,4 @@
-import { parse } from 'querystring';
+import * as QueryString from 'query-string'
 
 export enum Action {
   GET_PARTY = 'get_party',
@@ -25,10 +25,15 @@ export interface ResponseJSON {
 
 export interface ResponseParty {
   id: string;
+  owner: ResponseUser;
   isPrivate: boolean;
   maxUsers: number;
-  userCount: number;
-  ownerOffer: string;
+  users: ResponseUser[];
+}
+
+export interface ResponseUser {
+  id: string;
+  name: string;
 }
 
 export default class ServerConnection {
@@ -61,8 +66,9 @@ export default class ServerConnection {
   /**
    * サーバーに接続する
    */
-  constructor(wsUrl: string) {
-    const ws = new WebSocket(wsUrl);
+  constructor(wsUrl: string, userName: string) {
+    const qs = QueryString.stringify({ userName })
+    const ws = new WebSocket(`${wsUrl}?${qs}`);
     ws.onopen = msg => {
       if (this.onopen) this.onopen(msg);
     };
@@ -128,9 +134,8 @@ export default class ServerConnection {
    * @param isPrivate boolean パーティへの参加を禁止します
    * @param maxUsers int ユーザー参加制限 0 以下は無制限
    */
-  async createParty(offer: any, isPrivate = true, maxUsers = 0) {
+  async createParty(isPrivate = true, maxUsers = 0) {
     return (await this.send(Action.CREATE_PARTY, {
-      ownerOffer: JSON.stringify(offer),
       isPrivate: isPrivate,
       maxUsers: maxUsers
     })) as ResponseParty;

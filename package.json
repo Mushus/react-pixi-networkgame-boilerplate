@@ -11,6 +11,7 @@
         "mobx-react": "^5.1.2",
         "pixi.js": "^4.7.3",
         "prettier": "^1.12.1",
+        "query-string": "^6.1.0",
         "react": "^16.3.2",
         "react-dom": "^16.3.2",
         "react-mobx": "^0.0.3",
@@ -19,6 +20,7 @@
         "yarn": "^1.6.0"
     },
     "devDependencies": {
+        "@types/query-string": "^5.1.0",
         "@types/react": "^16.3.14",
         "@types/react-dom": "^16.0.5",
         "html-webpack-plugin": "^3.2.0",

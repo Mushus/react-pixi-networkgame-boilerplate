@@ -51,7 +51,7 @@ const robbyComponent = ({ app }: any) => {
           <div>{matching.party.id}</div>
           <div>{'' + matching.party.isPrivate}</div>
           <div>
-            ({'' + matching.party.userCount}/{'' + matching.party.maxUsers})
+            ({'' + matching.party.users.length}/{'' + matching.party.maxUsers})
           </div>
           {!robby.isOpenInviteDialog && (
             <button onClick={() => robby.setIsOpenInviteDialog(true)}>
@@ -108,7 +108,7 @@ const privateMatchComponent = ({ app }: any) => {
       <div>
         {matching.party &&
           matching.party.users &&
-          matching.party.users.map(user => <div>{user.name}</div>)}
+          matching.party.users.map(user => <div>{matching.party.owner.id == user.id && <span>👑</span> }{user.name}</div>)}
       </div>
       <button onClick={() => matching.transitionRobby()}>戻る</button>
     </div>

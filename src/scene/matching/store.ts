@@ -16,25 +16,22 @@ export default class SceneModel {
   // websocket
   serverConnection: ServerConnection = null;
 
-  playerConnection: Peer.Instance;
-
-  constructor(invite: string = null) {
-    this.init(invite);
+  constructor(userName: string, invite: string = null) {
+    this.init(invite, userName);
     this.transitionRobby();
   }
 
   @action
-  init(invite: string) {
+  init(invite: string, userName: string) {
     (async () => {
       const isInvite = invite != null;
-      const initiator = invite == null;
-      const offer = await this.createPlayerConnection(initiator);
-      const conn = await this.createServerConnection();
+      const conn = await this.createServerConnection(userName);
+      const playerConn = await this.createPlayerConnection(isInvite)
       if (isInvite) {
         await this.joinParty(invite);
       } else {
         // 初期状態でパーティを作成
-        await this.createParty(offer);
+        await this.createParty();
       }
     })();
   }
@@ -64,9 +61,6 @@ export default class SceneModel {
       peer.on('data', data => {
         console.log('data', data);
       });
-      runInAction(() => {
-        this.playerConnection = peer;
-      });
       if (!initiator) {
         resolve();
       }
@@ -77,10 +71,11 @@ export default class SceneModel {
    * サーバーとのコネクションを用意する
    */
   @action
-  createServerConnection() {
+  createServerConnection(userName: string) {
     return new Promise(resolve => {
       const conn = new ServerConnection(
-        `ws://${config.matchingServer.url}/matching`
+        `ws://${config.matchingServer.url}`,
+        userName,
       );
       conn.onopen = message => {
         resolve(conn);
@@ -96,9 +91,9 @@ export default class SceneModel {
   }
 
   @action
-  async createParty(offer: any) {
+  async createParty() {
     const conn = this.serverConnection;
-    const party = (await conn.createParty(offer)) as ResponseParty;
+    const party = (await conn.createParty()) as ResponseParty;
     runInAction(() => {
       this.party = new PartyModel(party);
     });
@@ -106,10 +101,9 @@ export default class SceneModel {
 
   @action
   async joinParty(partyId: string) {
-    const party = await this.getParty(partyId);
-    const offer = JSON.parse(party.ownerOffer);
-    this.playerConnection.signal(offer);
-    return party;
+    const party = await this.serverConnection.joinParty(partyId);
+    //const offer = JSON.parse(party.ownerOffer);
+    //this.playerConnection.signal(offer);
   }
 
   @action
@@ -137,7 +131,7 @@ export default class SceneModel {
   destroy() {
     console.log('destroy matching');
     this.serverConnection.close();
-    this.playerConnection.destroy();
+    //his.playerConnection.destroy();
   }
 }
 
@@ -156,30 +150,29 @@ export class PrivateMatchModel {}
 
 export class PartyModel {
   @observable id: string;
-  @observable ownerOffer: string;
+  @observable owner: UserModel
   @observable isPrivate: boolean;
   @observable maxUsers: number;
-  @observable userCount: number;
   @observable users: UserModel[];
 
   constructor({
     id,
+    owner,
     isPrivate,
+    users,
     maxUsers,
-    userCount,
-    ownerOffer
   }: {
     id: string;
+    owner: UserModel;
     isPrivate: boolean;
+    users: UserModel[];
     maxUsers: number;
-    userCount: number;
-    ownerOffer: string;
   }) {
     this.id = id;
+    this.owner = owner;
     this.isPrivate = isPrivate;
     this.maxUsers = maxUsers;
-    this.userCount = userCount;
-    this.ownerOffer = ownerOffer;
+    this.users = users;
   }
 }
 

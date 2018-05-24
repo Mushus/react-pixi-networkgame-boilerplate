@@ -48,7 +48,7 @@ export class AppStore implements AppStore {
   }
 
   @action
-  transitionMatchingScene(store = new MatchingSceneModel()) {
+  transitionMatchingScene(store = new MatchingSceneModel(this.user.name)) {
     if (this.scene) this.scene.destroy();
     this.scene = store;
   }

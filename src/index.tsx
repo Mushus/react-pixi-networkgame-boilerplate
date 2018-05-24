@@ -40,7 +40,7 @@ if (user != null) {
   store.app.user.updateFromJson(user);
   // 招待されてたらすぐさまマッチング開始する
   if (store.app.invite != null) {
-    store.app.transitionMatchingScene(new MatchingSceneModel(store.app.invite));
+    store.app.transitionMatchingScene(new MatchingSceneModel(store.app.user.name, store.app.invite));
   }
 } else {
   store.app.transitionCharaCreate();
