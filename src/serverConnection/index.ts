@@ -5,7 +5,10 @@ export enum Action {
   GET_PARTY = 'get_party',
   CREATE_PARTY = 'create_party',
   JOIN_PARTY = 'join_party',
-  Modify_PARTY = "modify_party",
+}
+
+export enum ResponseEvent {
+  ModifyParty = "modify_party",
 }
 
 export enum Status {
@@ -19,7 +22,7 @@ export type Callback<T> = {
 };
 
 export interface ResponseJSON {
-  action: Action;
+  event: ResponseEvent;
   status: Status;
   param: any;
   id: string;
@@ -89,7 +92,9 @@ export default class ServerConnection {
         this.callbacks.delete(requestId);
         return;
       }
-      this.callRecieve(json);
+      if (json.status != Status.NG) {
+        this.callRecieve(json);
+      }
     };
     ws.onerror = msg => {
       console.log(msg);
@@ -123,12 +128,11 @@ export default class ServerConnection {
    * 受け取ったjsonのイベントを発行する
    */
   callRecieve(response: ResponseJSON) {
-    switch(response.action) {
-      case 'modify_party':
-      this.onModifyParty && this.onModifyParty(new PartyModel(response.param))
+    switch(response.event) {
+      case ResponseEvent.ModifyParty:
+      this.onModifyParty && this.onModifyParty(new PartyModel(response.param));
       break;
     }
-    console.log(response);
   }
 
   /**

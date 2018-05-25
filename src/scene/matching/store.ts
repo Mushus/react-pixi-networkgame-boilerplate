@@ -26,6 +26,9 @@ export default class SceneModel {
     (async () => {
       const isInvite = invite != null;
       const conn = await this.createServerConnection(userName);
+      runInAction(() => {
+        this.serverConnection = conn
+      })
       if (isInvite) {
         await this.joinParty(invite);
       } else {
@@ -71,7 +74,7 @@ export default class SceneModel {
    */
   @action
   createServerConnection(userName: string) {
-    return new Promise(resolve => {
+    return new Promise<ServerConnection>(resolve => {
       const conn = new ServerConnection(
         `ws://${config.matchingServer.url}`,
         userName,
@@ -184,7 +187,8 @@ export class UserModel {
   @observable id: string;
   @observable name: string;
 
-  constructor({ name }: { name:string }) {
+  constructor({ id, name }: { id:string,name:string }) {
+    this.id = id
     this.name = name
   }
 }

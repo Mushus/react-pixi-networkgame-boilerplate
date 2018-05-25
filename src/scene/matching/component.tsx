@@ -33,7 +33,6 @@ const robbyComponent = ({ app }: any) => {
   const props = app as AppStore;
   const matching = props.scene as SceneModel;
   const robby = matching.scene as RobbyModel;
-  console.log(matching.party)
   return (
     <div>
       <h3>ロビー</h3>
@@ -50,7 +49,7 @@ const robbyComponent = ({ app }: any) => {
         <div>
           <h3>パーティ</h3>
           <div>
-            { matching.party.users.map(user => <div key={user.name}>{user.name}</div>) }
+            { matching.party.users.map((user, key) => <div key={user.id}>{user.name}</div>) }
           </div>
           <div>{matching.party.isPrivate? "非公開" : "公開"}</div>
           <div>
