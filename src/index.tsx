@@ -5,6 +5,7 @@ import { Provider } from 'mobx-react';
 import App, { AppStore } from '@/app';
 import { STORAGE_KEY_USER, SEARCH_PARAM_INVITE } from '@/declare';
 import { SceneModel as MatchingSceneModel } from '@/scene/matching';
+import '@/scss';
 
 configure({
   enforceActions: true
@@ -40,7 +41,9 @@ if (user != null) {
   store.app.user.updateFromJson(user);
   // 招待されてたらすぐさまマッチング開始する
   if (store.app.invite != null) {
-    store.app.transitionMatchingScene(new MatchingSceneModel(store.app.user.name, store.app.invite));
+    store.app.transitionMatchingScene(
+      new MatchingSceneModel(store.app.user.name, store.app.invite)
+    );
   }
 } else {
   store.app.transitionCharaCreate();

@@ -1,14 +1,14 @@
-import * as QueryString from 'query-string'
+import * as QueryString from 'query-string';
 import { PartyModel } from '@/scene/matching/store';
 
 export enum Action {
   GET_PARTY = 'get_party',
   CREATE_PARTY = 'create_party',
-  JOIN_PARTY = 'join_party',
+  JOIN_PARTY = 'join_party'
 }
 
 export enum ResponseEvent {
-  ModifyParty = "modify_party",
+  ModifyParty = 'modify_party'
 }
 
 export enum Status {
@@ -74,7 +74,7 @@ export default class ServerConnection {
    * サーバーに接続する
    */
   constructor(wsUrl: string, userName: string) {
-    const qs = QueryString.stringify({ userName })
+    const qs = QueryString.stringify({ userName });
     const ws = new WebSocket(`${wsUrl}?${qs}`);
     ws.onopen = msg => {
       if (this.onopen) this.onopen(msg);
@@ -128,10 +128,11 @@ export default class ServerConnection {
    * 受け取ったjsonのイベントを発行する
    */
   callRecieve(response: ResponseJSON) {
-    switch(response.event) {
+    switch (response.event) {
       case ResponseEvent.ModifyParty:
-      this.onModifyParty && this.onModifyParty(new PartyModel(response.param));
-      break;
+        this.onModifyParty &&
+          this.onModifyParty(new PartyModel(response.param));
+        break;
     }
   }
 

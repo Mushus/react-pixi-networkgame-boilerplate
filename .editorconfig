@@ -16,7 +16,7 @@ charset = utf-8
 trim_trailing_whitespace = false
 insert_final_newline = false
 
-[{*.js,*.jsx,*.ts,*.tsx}]
+[{*.js,*.jsx,*.ts,*.tsx,*.scss}]
 indent_style = space
 indent_size = 2
 end_of_line = lf

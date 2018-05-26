@@ -1,0 +1,32 @@
+@import '~normalize.css';
+@import './matching.scss';
+
+html {
+  font-size: 62.5%;
+}
+
+body {
+  font-size: 1.6rem;
+  letter-spacing: 0.1rem;
+  line-height: 1.75;
+  text-size-adjust: 100%;
+  font-feature-settings: 'palt';
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', YuGothic,
+    'ヒラギノ角ゴ ProN W3', Hiragino Kaku Gothic ProN, Arial, 'メイリオ', Meiryo,
+    sans-serif;
+}
+
+.icon--text {
+  font-size: 1.6rem;
+  vertical-align: baseline;
+}
+.icon--medium {
+  font-size: 18px;
+}
+
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  ::i-block-chrome,
+  body {
+    font-feature-settings: 'pkna';
+  }
+}

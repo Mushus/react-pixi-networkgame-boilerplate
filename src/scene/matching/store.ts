@@ -27,8 +27,8 @@ export default class SceneModel {
       const isInvite = invite != null;
       const conn = await this.createServerConnection(userName);
       runInAction(() => {
-        this.serverConnection = conn
-      })
+        this.serverConnection = conn;
+      });
       if (isInvite) {
         await this.joinParty(invite);
       } else {
@@ -77,7 +77,7 @@ export default class SceneModel {
     return new Promise<ServerConnection>(resolve => {
       const conn = new ServerConnection(
         `ws://${config.matchingServer.url}`,
-        userName,
+        userName
       );
       conn.onopen = message => {
         resolve(conn);
@@ -89,17 +89,17 @@ export default class SceneModel {
       runInAction(() => {
         this.serverConnection = conn;
       });
-      conn.onModifyParty = (party) => {
+      conn.onModifyParty = party => {
         runInAction(() => {
-          this.party = party
+          this.party = party;
         });
-      }
+      };
     });
   }
 
   @action
   async createParty() {
-    const party = await this.serverConnection.createParty() as ResponseParty;
+    const party = (await this.serverConnection.createParty()) as ResponseParty;
     runInAction(() => {
       this.party = new PartyModel(party);
     });
@@ -107,7 +107,9 @@ export default class SceneModel {
 
   @action
   async joinParty(partyId: string) {
-    const party = await this.serverConnection.joinParty(partyId)  as ResponseParty;
+    const party = (await this.serverConnection.joinParty(
+      partyId
+    )) as ResponseParty;
     runInAction(() => {
       this.party = new PartyModel(party);
     });
@@ -143,12 +145,7 @@ export default class SceneModel {
 }
 
 export class RobbyModel {
-  @observable isOpenInviteDialog = false;
 
-  @action
-  setIsOpenInviteDialog(opened: boolean) {
-    this.isOpenInviteDialog = opened;
-  }
 }
 
 export class PublicMatchModel {}
@@ -157,7 +154,7 @@ export class PrivateMatchModel {}
 
 export class PartyModel {
   @observable id: string;
-  @observable owner: UserModel
+  @observable owner: UserModel;
   @observable isPrivate: boolean;
   @observable maxUsers: number;
   @observable.ref users: UserModel[];
@@ -167,7 +164,7 @@ export class PartyModel {
     owner,
     isPrivate,
     users,
-    maxUsers,
+    maxUsers
   }: {
     id: string;
     owner: UserModel;
@@ -187,8 +184,8 @@ export class UserModel {
   @observable id: string;
   @observable name: string;
 
-  constructor({ id, name }: { id:string,name:string }) {
-    this.id = id
-    this.name = name
+  constructor({ id, name }: { id: string; name: string }) {
+    this.id = id;
+    this.name = name;
   }
 }

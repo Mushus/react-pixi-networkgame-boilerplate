@@ -12,7 +12,7 @@ const matching = ({ app }: any) => {
   const props = app as AppStore;
   const matching = app.scene as SceneModel;
   return (
-    <div>
+    <div className="matching-scene">
       <h2>matching</h2>
       <p>{props.user.name}さんようこそ</p>
       {matching.scene instanceof RobbyModel && <RobbyComponent />}
@@ -46,35 +46,44 @@ const robbyComponent = ({ app }: any) => {
         プライベートマッチ
       </button>
       {matching.party && (
-        <div>
-          <h3>パーティ</h3>
-          <div>
-            { matching.party.users.map((user, key) => <div key={user.id}>{user.name}</div>) }
+        <div className="party">
+          <h3 className="party__title">パーティ</h3>
+          <ul className="party__member-list">
+            {matching.party.users.map((user, key) => (
+              <li className="party__member" key={user.id}>
+                <i className="material-icons icon--text">check_circle_outline</i>
+                <i className="material-icons icon--text">loop</i>
+                <i className="material-icons icon--text">error_outline</i>
+                {user.name}
+                {matching.party.owner.id == user.id &&
+                  <i className="material-icons icon--text">
+                  grade
+                  </i>
+                }
+              </li>
+            ))}
+          </ul>
+          <div className="party__user-count">
+            ({'' + matching.party.users.length}/{matching.party.maxUsers == 0
+              ? '?'
+              : matching.party.maxUsers})
           </div>
-          <div>{matching.party.isPrivate? "非公開" : "公開"}</div>
-          <div>
-            ({'' + matching.party.users.length}/{matching.party.maxUsers == 0? "∞" : matching.party.maxUsers})
+          <div className="party__controlls">
+            {matching.party.isPrivate ? (
+              <button className="party__controlls__button"><i className="material-icons icon--medium">lock</i></button>
+            ) : (
+              <button><i className="material-icons icon--medium">lock_open</i></button>
+            )}
           </div>
-          {!robby.isOpenInviteDialog && (
-            <button onClick={() => robby.setIsOpenInviteDialog(true)}>
-              パーティに招待
-            </button>
-          )}
-          {robby.isOpenInviteDialog && (
-            <div>
-              <label>
-                パーティへの招待URL
-                <input
-                  type="text"
-                  readOnly={true}
-                  value={`${location.href}?invite=${matching.party.id}`}
-                />
-              </label>
-              <button onClick={() => robby.setIsOpenInviteDialog(false)}>
-                共有を停止
-              </button>
+          <div>
+            <div className="input-group">
+              <input
+                type="text"
+                readOnly={true}
+                value={`${location.href}?invite=${matching.party.id}`}
+              /><button><i className="material-icons icon--medium">link</i></button>
             </div>
-          )}
+          </div>
         </div>
       )}
     </div>
@@ -110,7 +119,12 @@ const privateMatchComponent = ({ app }: any) => {
       <div>
         {matching.party &&
           matching.party.users &&
-          matching.party.users.map(user => <div>{matching.party.owner.id == user.id && <span>👑</span> }{user.name}</div>)}
+          matching.party.users.map(user => (
+            <div>
+              {matching.party.owner.id == user.id && <span>👑</span>}
+              {user.name}
+            </div>
+          ))}
       </div>
       <button onClick={() => matching.transitionRobby()}>戻る</button>
     </div>

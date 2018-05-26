@@ -1,4 +1,5 @@
 const path = require("path");
+var ExtractTextPlugin = require("extract-text-webpack-plugin");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
@@ -10,11 +11,19 @@ module.exports = {
         test: /\.tsx?$/,
         use: "ts-loader",
         exclude: /node_modules/
+      },
+      {
+        test: /\.scss$/,
+        use: [
+          "style-loader",
+          "css-loader",
+          "sass-loader"
+        ]
       }
-    ]
+    ],
   },
   resolve: {
-    extensions: [".tsx", ".ts", ".js"],
+    extensions: [".tsx", ".ts", ".js", ".scss"],
     alias: {
       '@': path.resolve(__dirname, 'src/'),
     }
@@ -24,6 +33,7 @@ module.exports = {
     path: path.resolve(__dirname, "dist")
   },
   plugins: [
+    new ExtractTextPlugin("[name].css"),
     new HtmlWebpackPlugin({
       inject: true,
       template: path.resolve(__dirname, 'public/index.html')
