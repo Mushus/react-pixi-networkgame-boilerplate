@@ -34,7 +34,7 @@ export interface RootStore {
 }
 
 export interface SceneModel {
-  destroy(): void;
+  dispose(): void;
 }
 
 export const STORAGE_KEY_USER = 'user';

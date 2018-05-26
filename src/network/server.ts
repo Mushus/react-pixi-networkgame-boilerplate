@@ -1,13 +1,14 @@
 import * as QueryString from 'query-string';
-import { PartyModel } from '@/scene/matching/store';
 
 export enum Action {
   GET_PARTY = 'get_party',
   CREATE_PARTY = 'create_party',
-  JOIN_PARTY = 'join_party'
+  JOIN_PARTY = 'join_party',
+  RequestP2P = 'request_p2p'
 }
 
 export enum ResponseEvent {
+  CreateUser = 'create_user',
   ModifyParty = 'modify_party'
 }
 
@@ -57,7 +58,8 @@ export default class ServerConnection {
    */
   onclose: (e: Event) => void;
 
-  onModifyParty: (party: PartyModel) => void;
+  onModifyParty: (party: ResponseParty) => void;
+  onCreateUser: (user: ResponseUser) => void;
 
   /**
    * リクエストID
@@ -131,7 +133,10 @@ export default class ServerConnection {
     switch (response.event) {
       case ResponseEvent.ModifyParty:
         this.onModifyParty &&
-          this.onModifyParty(new PartyModel(response.param));
+          this.onModifyParty(response.param as ResponseParty);
+        break;
+      case ResponseEvent.CreateUser:
+        this.onCreateUser && this.onCreateUser(response.param as ResponseUser);
         break;
     }
   }
@@ -165,5 +170,11 @@ export default class ServerConnection {
     return (await this.send(Action.JOIN_PARTY, {
       partyId
     })) as ResponseParty;
+  }
+
+  async requestP2P(userId: string) {
+    return await this.send(Action.RequestP2P, {
+      userId
+    });
   }
 }

@@ -43,19 +43,19 @@ export class AppStore implements AppStore {
    */
   @action
   transitionTitleScene(store: TitleSceneModel = new TitleSceneModel()) {
-    if (this.scene) this.scene.destroy();
+    if (this.scene) this.scene.dispose();
     this.scene = store;
   }
 
   @action
   transitionMatchingScene(store = new MatchingSceneModel(this.user.name)) {
-    if (this.scene) this.scene.destroy();
+    if (this.scene) this.scene.dispose();
     this.scene = store;
   }
 
   @action
   transitionCharaCreate(store = new CharaCreateSceneModel()) {
-    if (this.scene) this.scene.destroy();
+    if (this.scene) this.scene.dispose();
     this.scene = store;
   }
 

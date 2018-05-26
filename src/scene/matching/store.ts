@@ -1,8 +1,9 @@
 import axios from 'axios';
 import { observable, action, runInAction } from 'mobx';
 import config from '@/config';
-import ServerConnection, { ResponseParty } from '@/serverConnection';
-import * as Peer from 'simple-peer';
+import ServerConnection, { ResponseParty } from '@/network/server';
+import PlayerConnection from '@/network/player';
+import { runInThisContext } from 'vm';
 
 const msUrl = `${config.matchingServer.scheme}://${config.matchingServer.url}`;
 
@@ -13,6 +14,7 @@ export default class SceneModel {
   @observable networkClosed = false;
   //パーティ
   @observable.ref party: PartyModel;
+  @observable.ref me: UserData;
   // websocket
   serverConnection: ServerConnection = null;
 
@@ -39,37 +41,6 @@ export default class SceneModel {
   }
 
   /**
-   * P2Pコネクションを用意する
-   */
-  @action
-  createPlayerConnection(initiator: boolean) {
-    return new Promise<{}>(resolve => {
-      const peer = new Peer({ initiator: initiator });
-      peer.on('error', data => {
-        console.log('error', data);
-      });
-      peer.on('signal', data => {
-        console.log('signal', data);
-        if (data.type == 'offer') {
-          resolve(data);
-        }
-        if (data.type == 'answer') {
-          peer.signal(data);
-        }
-      });
-      peer.on('connect', data => {
-        console.log('connect', data);
-      });
-      peer.on('data', data => {
-        console.log('data', data);
-      });
-      if (!initiator) {
-        resolve();
-      }
-    });
-  }
-
-  /**
    * サーバーとのコネクションを用意する
    */
   @action
@@ -91,7 +62,12 @@ export default class SceneModel {
       });
       conn.onModifyParty = party => {
         runInAction(() => {
-          this.party = party;
+          this.party.update(party as PartyModel);
+        });
+      };
+      conn.onCreateUser = user => {
+        runInAction(() => {
+          this.me = user;
         });
       };
     });
@@ -99,19 +75,17 @@ export default class SceneModel {
 
   @action
   async createParty() {
-    const party = (await this.serverConnection.createParty()) as ResponseParty;
+    const party = (await this.serverConnection.createParty()) as PartyData;
     runInAction(() => {
-      this.party = new PartyModel(party);
+      this.party = new PartyModel(this.serverConnection, party, this.me.id);
     });
   }
 
   @action
   async joinParty(partyId: string) {
-    const party = (await this.serverConnection.joinParty(
-      partyId
-    )) as ResponseParty;
+    const party = (await this.serverConnection.joinParty(partyId)) as PartyData;
     runInAction(() => {
-      this.party = new PartyModel(party);
+      this.party = new PartyModel(this.serverConnection, party, this.me.id);
     });
   }
 
@@ -137,10 +111,10 @@ export default class SceneModel {
   }
 
   @action
-  destroy() {
-    console.log('destroy matching');
+  dispose() {
+    console.log('dispose matching');
     this.serverConnection.close();
-    //his.playerConnection.destroy();
+    //his.playerConnection.dispose();
   }
 }
 
@@ -163,12 +137,23 @@ export class PartyModel {
   @observable owner: UserModel;
   @observable isPrivate: boolean;
   @observable maxUsers: number;
-  @observable.shallow users: UserModel[];
+  @observable.shallow users: UserModel[] = [];
 
-  constructor(pd: PartyData) {
+  myUserId: string;
+
+  serverConnection: ServerConnection;
+
+  constructor(
+    serverConnection: ServerConnection,
+    pd: PartyData,
+    userId: string
+  ) {
+    this.serverConnection = serverConnection;
+    this.myUserId = userId;
     this.update(pd);
   }
 
+  // NOTE: myUserId, serverConnectionを設定している必要がある
   @action
   update(pd: PartyData): PartyModel {
     this.id = pd.id;
@@ -179,19 +164,26 @@ export class PartyModel {
     const newUsers: UserModel[] = [];
     for (const userData of pd.users) {
       const index = this.users.findIndex(user => user.id === userData.id);
-      const isFound = index === -1;
+      const isFound = index !== -1;
       newUsers[newUsers.length] = isFound
         ? this.users[index].update(userData)
-        : new UserModel(userData);
+        : new UserModel(this.serverConnection, userData, this.myUserId);
       delete this.users[index];
     }
     for (const user of this.users) {
-      user.destroy();
+      user.dispose();
     }
     this.users = newUsers;
     this.owner = newUsers.find(user => user.id === pd.owner.id);
 
-    return this
+    return this;
+  }
+
+  @action
+  dispose() {
+    for (const user of this.users) {
+      user.dispose();
+    }
   }
 }
 
@@ -201,20 +193,46 @@ export interface UserData {
 }
 
 export class UserModel {
+  connection: PlayerConnection;
   @observable id: string;
   @observable name: string;
+  @observable isMe: boolean;
 
-  constructor(ud: UserData) {
-    this.update(ud)
+  constructor(
+    serverConnection: ServerConnection,
+    ud: UserData,
+    myUserId: string
+  ) {
+    this.update(ud);
+    this.isMe = myUserId === this.id;
+    if (!this.isMe) {
+      (async () => {
+        this.connection = new PlayerConnection(serverConnection);
+        await this.requestPeer();
+        console.log(this);
+        return;
+      })();
+    }
   }
 
   @action
   update(ud: UserData): UserModel {
     this.id = ud.id;
     this.name = ud.name;
-    return this
+    return this;
   }
 
   @action
-  destroy() {}
+  async requestPeer() {
+    if (this.connection) {
+      return await this.connection.request(this.id);
+    }
+  }
+
+  @action
+  dispose() {
+    if (this.connection) {
+      this.connection.dispose();
+    }
+  }
 }

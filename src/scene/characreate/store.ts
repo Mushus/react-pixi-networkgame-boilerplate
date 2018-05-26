@@ -14,5 +14,5 @@ export default class SceneModel {
   }
 
   @action
-  destroy() {}
+  dispose() {}
 }

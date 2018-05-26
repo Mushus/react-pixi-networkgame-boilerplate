@@ -51,6 +51,9 @@ const robbyComponent = ({ app }: any) => {
           <ul className="party__member-list">
             {matching.party.users.map((user, key) => (
               <li className="party__member" key={user.id}>
+                {user.isMe && (
+                  <i className="material-icons icon--text">favorite_border</i>
+                )}
                 <i className="material-icons icon--text">
                   check_circle_outline
                 </i>
