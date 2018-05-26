@@ -144,48 +144,77 @@ export default class SceneModel {
   }
 }
 
-export class RobbyModel {
-
-}
+export class RobbyModel {}
 
 export class PublicMatchModel {}
 
 export class PrivateMatchModel {}
+
+export interface PartyData {
+  id: string;
+  owner: UserData;
+  isPrivate: boolean;
+  users: UserData[];
+  maxUsers: number;
+}
 
 export class PartyModel {
   @observable id: string;
   @observable owner: UserModel;
   @observable isPrivate: boolean;
   @observable maxUsers: number;
-  @observable.ref users: UserModel[];
+  @observable.shallow users: UserModel[];
 
-  constructor({
-    id,
-    owner,
-    isPrivate,
-    users,
-    maxUsers
-  }: {
-    id: string;
-    owner: UserModel;
-    isPrivate: boolean;
-    users: UserModel[];
-    maxUsers: number;
-  }) {
-    this.id = id;
-    this.owner = new UserModel(owner);
-    this.isPrivate = isPrivate;
-    this.maxUsers = maxUsers;
-    this.users = users.map(user => new UserModel(user));
+  constructor(pd: PartyData) {
+    this.update(pd);
   }
+
+  @action
+  update(pd: PartyData): PartyModel {
+    this.id = pd.id;
+    this.isPrivate = pd.isPrivate;
+    this.maxUsers = pd.maxUsers;
+
+    // ユーザーの情報のインスタンスを生成し直さないように更新する
+    const newUsers: UserModel[] = [];
+    for (const userData of pd.users) {
+      const index = this.users.findIndex(user => user.id === userData.id);
+      const isFound = index === -1;
+      newUsers[newUsers.length] = isFound
+        ? this.users[index].update(userData)
+        : new UserModel(userData);
+      delete this.users[index];
+    }
+    for (const user of this.users) {
+      user.destroy();
+    }
+    this.users = newUsers;
+    this.owner = newUsers.find(user => user.id === pd.owner.id);
+
+    return this
+  }
+}
+
+export interface UserData {
+  name: string;
+  id: string;
 }
 
 export class UserModel {
   @observable id: string;
   @observable name: string;
 
-  constructor({ id, name }: { id: string; name: string }) {
-    this.id = id;
-    this.name = name;
+  constructor(ud: UserData) {
+    this.update(ud)
   }
+
+  @action
+  update(ud: UserData): UserModel {
+    this.id = ud.id;
+    this.name = ud.name;
+    return this
+  }
+
+  @action
+  destroy() {}
 }

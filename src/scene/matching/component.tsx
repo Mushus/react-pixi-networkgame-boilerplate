@@ -51,15 +51,15 @@ const robbyComponent = ({ app }: any) => {
           <ul className="party__member-list">
             {matching.party.users.map((user, key) => (
               <li className="party__member" key={user.id}>
-                <i className="material-icons icon--text">check_circle_outline</i>
+                <i className="material-icons icon--text">
+                  check_circle_outline
+                </i>
                 <i className="material-icons icon--text">loop</i>
                 <i className="material-icons icon--text">error_outline</i>
                 {user.name}
-                {matching.party.owner.id == user.id &&
-                  <i className="material-icons icon--text">
-                  grade
-                  </i>
-                }
+                {matching.party.owner.id == user.id && (
+                  <i className="material-icons icon--text">grade</i>
+                )}
               </li>
             ))}
           </ul>
@@ -70,9 +70,13 @@ const robbyComponent = ({ app }: any) => {
           </div>
           <div className="party__controlls">
             {matching.party.isPrivate ? (
-              <button className="party__controlls__button"><i className="material-icons icon--medium">lock</i></button>
+              <button className="party__controlls__button">
+                <i className="material-icons icon--medium">lock</i>
+              </button>
             ) : (
-              <button><i className="material-icons icon--medium">lock_open</i></button>
+              <button>
+                <i className="material-icons icon--medium">lock_open</i>
+              </button>
             )}
           </div>
           <div>
@@ -81,7 +85,10 @@ const robbyComponent = ({ app }: any) => {
                 type="text"
                 readOnly={true}
                 value={`${location.href}?invite=${matching.party.id}`}
-              /><button><i className="material-icons icon--medium">link</i></button>
+              />
+              <button>
+                <i className="material-icons icon--medium">link</i>
+              </button>
             </div>
           </div>
         </div>
