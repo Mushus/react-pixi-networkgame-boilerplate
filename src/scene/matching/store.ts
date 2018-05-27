@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { observable, action, runInAction } from 'mobx';
 import config from '@/config';
-import ServerConnection, { ResponseParty } from '@/network/server';
+import ServerConnection, { ResponseParty, ConnectionEvent, ResponseUser } from '@/network/server';
 import PlayerConnection from '@/network/player';
 import { runInThisContext } from 'vm';
 
@@ -50,26 +50,24 @@ export default class SceneModel {
         `ws://${config.matchingServer.url}`,
         userName
       );
-      conn.onopen = message => {
-        resolve(conn);
-      };
-      conn.onclose = action(message => {
-        this.networkClosed = true;
+      conn.on("open", () => {
+        resolve(conn)
       });
+      conn.on("close", () => action(message => {
+        this.networkClosed = true;
+      }));
 
       runInAction(() => {
         this.serverConnection = conn;
       });
-      conn.onModifyParty = party => {
-        runInAction(() => {
-          this.party.update(party as PartyModel);
-        });
-      };
-      conn.onCreateUser = user => {
-        runInAction(() => {
-          this.me = user;
-        });
-      };
+
+      conn.on(ConnectionEvent.ModifyParty, action(party => {
+        this.party.update(party as ResponseParty);
+      }));
+
+      conn.on(ConnectionEvent.CreateUser, action(user => {
+        this.me = user as ResponseUser;
+      }))
     });
   }
 
@@ -113,7 +111,7 @@ export default class SceneModel {
   @action
   dispose() {
     console.log('dispose matching');
-    this.serverConnection.close();
+    this.serverConnection.dispose();
     //his.playerConnection.dispose();
   }
 }
@@ -150,12 +148,12 @@ export class PartyModel {
   ) {
     this.serverConnection = serverConnection;
     this.myUserId = userId;
-    this.update(pd);
+    this.update(pd, true);
   }
 
   // NOTE: myUserId, serverConnectionを設定している必要がある
   @action
-  update(pd: PartyData): PartyModel {
+  update(pd: PartyData, isInit = false): PartyModel {
     this.id = pd.id;
     this.isPrivate = pd.isPrivate;
     this.maxUsers = pd.maxUsers;
@@ -167,7 +165,7 @@ export class PartyModel {
       const isFound = index !== -1;
       newUsers[newUsers.length] = isFound
         ? this.users[index].update(userData)
-        : new UserModel(this.serverConnection, userData, this.myUserId);
+        : new UserModel(this.serverConnection, userData, this.myUserId, isInit);
       delete this.users[index];
     }
     for (const user of this.users) {
@@ -201,15 +199,19 @@ export class UserModel {
   constructor(
     serverConnection: ServerConnection,
     ud: UserData,
-    myUserId: string
+    myUserId: string,
+    isReceive: boolean,
   ) {
     this.update(ud);
     this.isMe = myUserId === this.id;
     if (!this.isMe) {
       (async () => {
-        this.connection = new PlayerConnection(serverConnection);
-        await this.requestPeer();
-        console.log(this);
+        this.connection = new PlayerConnection(serverConnection, this.id);
+        if (isReceive) {
+          await this.requestPeer();
+        } else {
+          await this.responsePeer();
+        }
         return;
       })();
     }
@@ -223,9 +225,16 @@ export class UserModel {
   }
 
   @action
-  async requestPeer() {
+  requestPeer() {
     if (this.connection) {
-      return await this.connection.request(this.id);
+      return this.connection.request(this.id);
+    }
+  }
+
+  @action
+  responsePeer() {
+    if (this.connection) {
+      return this.connection.response()
     }
   }
 

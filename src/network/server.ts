@@ -1,15 +1,20 @@
 import * as QueryString from 'query-string';
 
 export enum Action {
-  GET_PARTY = 'get_party',
-  CREATE_PARTY = 'create_party',
-  JOIN_PARTY = 'join_party',
-  RequestP2P = 'request_p2p'
+  GetParty = 'get_party',
+  CreateParty = 'create_party',
+  JoinParty = 'join_party',
+  RequestP2P = 'request_p2p',
+  ResponseP2P = 'response_p2p'
 }
 
-export enum ResponseEvent {
+export enum ConnectionEvent {
+  Open = 'open',
+  Close = 'close',
   CreateUser = 'create_user',
-  ModifyParty = 'modify_party'
+  ModifyParty = 'modify_party',
+  RequestP2P= "request_p2p",
+  ResponseP2P= "response_p2p",
 }
 
 export enum Status {
@@ -23,7 +28,7 @@ export type Callback<T> = {
 };
 
 export interface ResponseJSON {
-  event: ResponseEvent;
+  event: ConnectionEvent;
   status: Status;
   param: any;
   id: string;
@@ -37,6 +42,16 @@ export interface ResponseParty {
   users: ResponseUser[];
 }
 
+export interface ResponseRequestP2P {
+  userId: string;
+  offer: string;
+}
+
+export interface ResponseResponseP2P {
+  userId: string;
+  answer: string;
+}
+
 export interface ResponseUser {
   id: string;
   name: string;
@@ -48,18 +63,14 @@ export default class ServerConnection {
    */
   ws: WebSocket;
 
-  /**
-   * コネクションが開いた時に呼ばれるイベント
-   */
-  onopen: (e: Event) => void;
-
-  /**
-   * コネクションが閉じた時に呼ばれるイベント
-   */
-  onclose: (e: Event) => void;
-
-  onModifyParty: (party: ResponseParty) => void;
-  onCreateUser: (user: ResponseUser) => void;
+  _event: { [key: string]: { func: ((event: any) => void), once: boolean }[] } = {
+    [ConnectionEvent.Open]: [],
+    [ConnectionEvent.Close]: [],
+    [ConnectionEvent.ModifyParty]: [],
+    [ConnectionEvent.CreateUser]: [],
+    [ConnectionEvent.RequestP2P]: [],
+    [ConnectionEvent.ResponseP2P]: []
+  };
 
   /**
    * リクエストID
@@ -79,7 +90,7 @@ export default class ServerConnection {
     const qs = QueryString.stringify({ userName });
     const ws = new WebSocket(`${wsUrl}?${qs}`);
     ws.onopen = msg => {
-      if (this.onopen) this.onopen(msg);
+      this._handle(ConnectionEvent.Open, msg)
     };
     ws.onmessage = msg => {
       const json = JSON.parse(msg.data) as ResponseJSON;
@@ -131,20 +142,44 @@ export default class ServerConnection {
    */
   callRecieve(response: ResponseJSON) {
     switch (response.event) {
-      case ResponseEvent.ModifyParty:
-        this.onModifyParty &&
-          this.onModifyParty(response.param as ResponseParty);
+      case ConnectionEvent.ModifyParty:
+        this._handle(ConnectionEvent.ModifyParty, response.param as ResponseParty)
         break;
-      case ResponseEvent.CreateUser:
-        this.onCreateUser && this.onCreateUser(response.param as ResponseUser);
+      case ConnectionEvent.CreateUser:
+        this._handle(ConnectionEvent.CreateUser, response.param as ResponseUser)
         break;
+        case ConnectionEvent.RequestP2P:
+        this._handle(ConnectionEvent.RequestP2P, response.param as ResponseRequestP2P)
+        case ConnectionEvent.ResponseP2P:
+        this._handle(ConnectionEvent.ResponseP2P, response.param as ResponseResponseP2P)
     }
+  }
+
+  on(handler: string, func: (data: any) => void = null) {
+    this._event[handler].push({ func, once: false })
+  }
+
+  once(handler: string, func: (data: any) => void = null) {
+    this._event[handler].push({ func, once: true })
+  }
+
+  off(handler: string, func: (data: any) => void) {
+    const index = this._event[handler].findIndex(event => event.func == func)
+    delete this._event[handler][index]
+  }
+
+  _handle<T>(handler: string, data: T) {
+    if (!this._event[handler]) return;
+    for (const event of this._event[handler]) {
+      event.func(data);
+    }
+    this._event[handler] = this._event[handler].filter(event => !event.once)
   }
 
   /**
    * 接続を閉じる
    */
-  close() {
+  dispose() {
     this.ws.close();
   }
 
@@ -154,26 +189,33 @@ export default class ServerConnection {
    * @param maxUsers int ユーザー参加制限 0 以下は無制限
    */
   async createParty(isPrivate = true, maxUsers = 0) {
-    return (await this.send(Action.CREATE_PARTY, {
+    return (await this.send(Action.CreateParty, {
       isPrivate: isPrivate,
       maxUsers: maxUsers
     })) as ResponseParty;
   }
 
   async getParty(partyId: string) {
-    return (await this.send(Action.GET_PARTY, {
+    return (await this.send(Action.GetParty, {
       partyId
     })) as ResponseParty;
   }
 
   async joinParty(partyId: string) {
-    return (await this.send(Action.JOIN_PARTY, {
+    return (await this.send(Action.JoinParty, {
       partyId
     })) as ResponseParty;
   }
 
-  async requestP2P(userId: string) {
+  async requestP2P(userId: string, offer: string) {
     return await this.send(Action.RequestP2P, {
+      offer,
+      userId
+    });
+  }
+  async responseP2P(userId: string, answer: string) {
+    return await this.send(Action.ResponseP2P, {
+      answer,
       userId
     });
   }
