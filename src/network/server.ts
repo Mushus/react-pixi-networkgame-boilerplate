@@ -169,20 +169,20 @@ export default class ServerConnection {
     }
   }
 
-  on(handler: string, func: (data: any) => void = null) {
+  on(handler: ConnectionEvent, func: (data: any) => void = null) {
     this._event[handler].push({ func, once: false });
   }
 
-  once(handler: string, func: (data: any) => void = null) {
+  once(handler: ConnectionEvent, func: (data: any) => void = null) {
     this._event[handler].push({ func, once: true });
   }
 
-  off(handler: string, func: (data: any) => void) {
+  off(handler: ConnectionEvent, func: (data: any) => void) {
     const index = this._event[handler].findIndex(event => event.func == func);
     delete this._event[handler][index];
   }
 
-  _handle<T>(handler: string, data: T) {
+  _handle<T>(handler: ConnectionEvent, data: T) {
     if (!this._event[handler]) return;
     for (const event of this._event[handler]) {
       event.func(data);
