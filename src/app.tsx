@@ -6,7 +6,7 @@ import {
   RootStore,
   AppStore as IAppStore,
   SceneModel,
-  STORAGE_KEY_USER
+  StorageKeyUser
 } from '@/declare';
 import { UserModel } from '@/model';
 import {
@@ -66,7 +66,7 @@ export class AppStore implements AppStore {
   @action
   updateUser(um: UserModel) {
     this.user = um;
-    localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(um));
+    localStorage.setItem(StorageKeyUser, JSON.stringify(um));
   }
 }
 

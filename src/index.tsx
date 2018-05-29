@@ -3,7 +3,7 @@ import { render } from 'react-dom';
 import { configure } from 'mobx';
 import { Provider } from 'mobx-react';
 import App, { AppStore } from '@/app';
-import { STORAGE_KEY_USER, SEARCH_PARAM_INVITE } from '@/declare';
+import { StorageKeyUser, SearchParamInvite } from '@/declare';
 import { SceneModel as MatchingSceneModel } from '@/scene/matching';
 import '@/scss';
 
@@ -27,8 +27,8 @@ render(
 }, false); */
 
 const urlParams = new URLSearchParams(location.search);
-if (urlParams.has(SEARCH_PARAM_INVITE)) {
-  store.app.invite = urlParams.get(SEARCH_PARAM_INVITE);
+if (urlParams.has(SearchParamInvite)) {
+  store.app.invite = urlParams.get(SearchParamInvite);
   // urlパラメータを抜く
   const urlObj = new URL(location.href);
   urlObj.search = '';
@@ -36,7 +36,7 @@ if (urlParams.has(SEARCH_PARAM_INVITE)) {
   history.replaceState({}, null, nonParamUrl);
 }
 
-const user = localStorage.getItem(STORAGE_KEY_USER);
+const user = localStorage.getItem(StorageKeyUser);
 if (user != null) {
   store.app.user.updateFromJson(user);
   // 招待されてたらすぐさまマッチング開始する

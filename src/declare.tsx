@@ -37,5 +37,5 @@ export interface SceneModel {
   dispose(): void;
 }
 
-export const STORAGE_KEY_USER = 'user';
-export const SEARCH_PARAM_INVITE = 'invite';
+export const StorageKeyUser = 'user';
+export const SearchParamInvite = 'invite';

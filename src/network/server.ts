@@ -13,8 +13,8 @@ export enum ConnectionEvent {
   Close = 'close',
   CreateUser = 'create_user',
   ModifyParty = 'modify_party',
-  RequestP2P= "request_p2p",
-  ResponseP2P= "response_p2p",
+  RequestP2P = 'request_p2p',
+  ResponseP2P = 'response_p2p'
 }
 
 export enum Status {
@@ -63,7 +63,9 @@ export default class ServerConnection {
    */
   ws: WebSocket;
 
-  _event: { [key: string]: { func: ((event: any) => void), once: boolean }[] } = {
+  _event: {
+    [key: string]: { func: ((event: any) => void); once: boolean }[];
+  } = {
     [ConnectionEvent.Open]: [],
     [ConnectionEvent.Close]: [],
     [ConnectionEvent.ModifyParty]: [],
@@ -90,7 +92,7 @@ export default class ServerConnection {
     const qs = QueryString.stringify({ userName });
     const ws = new WebSocket(`${wsUrl}?${qs}`);
     ws.onopen = msg => {
-      this._handle(ConnectionEvent.Open, msg)
+      this._handle(ConnectionEvent.Open, msg);
     };
     ws.onmessage = msg => {
       const json = JSON.parse(msg.data) as ResponseJSON;
@@ -143,29 +145,41 @@ export default class ServerConnection {
   callRecieve(response: ResponseJSON) {
     switch (response.event) {
       case ConnectionEvent.ModifyParty:
-        this._handle(ConnectionEvent.ModifyParty, response.param as ResponseParty)
+        this._handle(
+          ConnectionEvent.ModifyParty,
+          response.param as ResponseParty
+        );
         break;
       case ConnectionEvent.CreateUser:
-        this._handle(ConnectionEvent.CreateUser, response.param as ResponseUser)
+        this._handle(
+          ConnectionEvent.CreateUser,
+          response.param as ResponseUser
+        );
         break;
-        case ConnectionEvent.RequestP2P:
-        this._handle(ConnectionEvent.RequestP2P, response.param as ResponseRequestP2P)
-        case ConnectionEvent.ResponseP2P:
-        this._handle(ConnectionEvent.ResponseP2P, response.param as ResponseResponseP2P)
+      case ConnectionEvent.RequestP2P:
+        this._handle(
+          ConnectionEvent.RequestP2P,
+          response.param as ResponseRequestP2P
+        );
+      case ConnectionEvent.ResponseP2P:
+        this._handle(
+          ConnectionEvent.ResponseP2P,
+          response.param as ResponseResponseP2P
+        );
     }
   }
 
   on(handler: string, func: (data: any) => void = null) {
-    this._event[handler].push({ func, once: false })
+    this._event[handler].push({ func, once: false });
   }
 
   once(handler: string, func: (data: any) => void = null) {
-    this._event[handler].push({ func, once: true })
+    this._event[handler].push({ func, once: true });
   }
 
   off(handler: string, func: (data: any) => void) {
-    const index = this._event[handler].findIndex(event => event.func == func)
-    delete this._event[handler][index]
+    const index = this._event[handler].findIndex(event => event.func == func);
+    delete this._event[handler][index];
   }
 
   _handle<T>(handler: string, data: T) {
@@ -173,7 +187,7 @@ export default class ServerConnection {
     for (const event of this._event[handler]) {
       event.func(data);
     }
-    this._event[handler] = this._event[handler].filter(event => !event.once)
+    this._event[handler] = this._event[handler].filter(event => !event.once);
   }
 
   /**
