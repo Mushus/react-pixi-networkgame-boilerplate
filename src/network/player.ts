@@ -37,9 +37,7 @@ export default class PlayerConnection {
       console.log('data', data);
     });
 
-    console.log(initiator);
     if (!initiator) {
-      console.log(initiator);
       this.serverConnection.once(
         ConnectionEvent.RequestP2P,
         (data: ResponseRequestP2P) => {
