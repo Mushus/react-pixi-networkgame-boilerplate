@@ -11,7 +11,7 @@ import { UserData } from '@/scene/matching/types';
 export enum NetworkStatus {
   Me = 'me',
   Connecting = 'connecting',
-  Connected = 'connected',
+  Connected = 'connected'
 }
 
 export class User {
@@ -19,7 +19,7 @@ export class User {
   @observable id: string;
   @observable name: string;
   @observable isMe: boolean;
-  @observable _networkStatus: NetworkStatus
+  @observable _networkStatus: NetworkStatus;
 
   constructor(
     serverConnection: ServerConnection,
@@ -29,7 +29,9 @@ export class User {
   ) {
     this.update(ud);
     this.isMe = myUserId === this.id;
-    this._networkStatus = this.isMe? NetworkStatus.Me : NetworkStatus.Connecting
+    this._networkStatus = this.isMe
+      ? NetworkStatus.Me
+      : NetworkStatus.Connecting;
     if (!this.isMe) {
       (async () => {
         this.connection = new PlayerConnection(serverConnection, this.id);
@@ -74,7 +76,8 @@ export class User {
     }
   }
 
-  @computed get networkStatus() {
-    return this._networkStatus
+  @computed
+  get networkStatus() {
+    return this._networkStatus;
   }
 }

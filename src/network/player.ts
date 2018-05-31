@@ -1,53 +1,32 @@
 import * as Peer from 'simple-peer';
 import ServerConnection, {
-  ConnectionEvent,
+  ConnectionEvent as ServerEvent,
   ResponseRequestP2P,
   ResponseResponseP2P
 } from '@/network/server';
+import * as MsgPack from 'msgpack-lite';
+
+export enum ConnectionEvent {
+  UpdateParty = 'update_party'
+}
 
 export default class PlayerConnection {
   serverConnection: ServerConnection;
   peer: Peer.Instance;
   userId: string;
-  onerror: (data: any) => void;
+
+  _event: {
+    [key: string]: { func: ((event: any) => void); once: boolean }[];
+  } = {
+    [ConnectionEvent.UpdateParty]: []
+  };
 
   constructor(serverConnection: ServerConnection, userId: string) {
     this.serverConnection = serverConnection;
     this.userId = userId;
   }
 
-  createPeer(initiator: boolean) {
-    this.peer = new Peer({ initiator });
-    this.peer.on('error', data => {
-      console.log('error', data);
-    });
-    this.peer.on('signal', data => {
-      console.log('signal', data);
-      if (data.type == 'offer') {
-        //peer.signal(data);
-      }
-      if (data.type == 'answer') {
-        this.peer.signal(data);
-      }
-    });
-    this.peer.on('connect', data => {
-      console.log('connect', data);
-    });
-    this.peer.on('data', data => {
-      console.log('data', data);
-    });
-
-    if (!initiator) {
-      this.serverConnection.once(
-        ConnectionEvent.RequestP2P,
-        (data: ResponseRequestP2P) => {
-          console.log(data);
-        }
-      );
-    }
-  }
-
-  request(userId: string) {
+  request() {
     return new Promise(resolve => {
       // (1) STUNサーバーからのsingalを待機
       this.peer = new Peer({ initiator: true, trickle: false });
@@ -55,12 +34,12 @@ export default class PlayerConnection {
       this.peer.on('signal', data => {
         if (data.type == 'offer') {
           const offer = JSON.stringify(data);
-          this.serverConnection.requestP2P(userId, offer);
+          this.serverConnection.requestP2P(this.userId, offer);
         }
       });
       // (3) 相手方の応答をSTUNサーバーに送る
       this.serverConnection.once(
-        ConnectionEvent.ResponseP2P,
+        ServerEvent.ResponseP2P,
         (data: ResponseResponseP2P) => {
           const answer = JSON.parse(data.answer);
           this.peer.signal(answer);
@@ -73,9 +52,9 @@ export default class PlayerConnection {
         resolve();
       });
 
-      this.peer.on('data', (data: Uint8Array) => {
-        const json = new TextDecoder('utf-8').decode(data);
-        console.log(json);
+      this.peer.on('data', (raw: Uint8Array) => {
+        const data = MsgPack.decode(raw);
+        console.log(data);
       });
     });
   }
@@ -85,7 +64,7 @@ export default class PlayerConnection {
       this.peer = new Peer({ initiator: false, trickle: false });
       // (1) 相手方からの接続要求をSTUNサーバーに転送
       this.serverConnection.once(
-        ConnectionEvent.RequestP2P,
+        ServerEvent.RequestP2P,
         (data: ResponseRequestP2P) => {
           const offer = JSON.parse(data.offer);
           this.peer.signal(data.offer);
@@ -100,19 +79,41 @@ export default class PlayerConnection {
       });
       // (3) 接続完了
       this.peer.on('connect', () => {
-        var raw = new TextEncoder().encode('from receiver!');
+        var raw = MsgPack.encode({ test: 'from receiver!' });
         this.peer.send(raw);
         resolve();
       });
 
-      this.peer.on('data', (data: Uint8Array) => {
-        const json = new TextDecoder('utf-8').decode(data);
-        console.log(json);
+      this.peer.on('data', (raw: Uint8Array) => {
+        const data = MsgPack.decode(raw);
+        console.log(data);
       });
     });
   }
 
   dispose() {
     this.peer.destroy();
+    delete this._event;
+  }
+
+  on(handler: ConnectionEvent, func: (data: any) => void = null) {
+    this._event[handler].push({ func, once: false });
+  }
+
+  once(handler: ConnectionEvent, func: (data: any) => void = null) {
+    this._event[handler].push({ func, once: true });
+  }
+
+  off(handler: ConnectionEvent, func: (data: any) => void) {
+    const index = this._event[handler].findIndex(event => event.func == func);
+    delete this._event[handler][index];
+  }
+
+  _handle<T>(handler: ConnectionEvent, data: T) {
+    if (!this._event[handler]) return;
+    for (const event of this._event[handler]) {
+      event.func(data);
+    }
+    this._event[handler] = this._event[handler].filter(event => !event.once);
   }
 }

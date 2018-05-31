@@ -1,60 +1,68 @@
-import ServerConnection, { ConnectionEvent, ResponseUser, ResponseParty } from "@/network/server";
-import PlayerConnection from "@/network/player";
+import ServerConnection, {
+  ConnectionEvent as ServerEvent,
+  ResponseUser,
+  ResponseParty
+} from '@/network/server';
+import PlayerConnection, {
+  ConnectionEvent as PlayerEvent
+} from '@/network/player';
 
 export class Matching {
-  _serverConnection: ServerConnection
-  _me: User
-  _party: Party
+  _serverConnection: ServerConnection;
+  _me: User;
+  _party: Party;
   constructor(wsUrl: string, userName: string) {
-    const conn = new ServerConnection(wsUrl, userName)
-    this._serverConnection = conn
+    const conn = new ServerConnection(wsUrl, userName);
+    this._serverConnection = conn;
 
-    conn.on(ConnectionEvent.CreateUser, (user: ResponseUser) => {
-      this._me = new Me(user)
-    })
+    conn.on(ServerEvent.CreateUser, (user: ResponseUser) => {
+      this._me = new Me(user);
+    });
   }
 
   async createParty(isPrivate: boolean, maxUsers: number) {
-    const partyData = await this._serverConnection.createParty(isPrivate, maxUsers)
+    const partyData = await this._serverConnection.createParty(
+      isPrivate,
+      maxUsers
+    );
     this._party = new Party(partyData, this._me, this);
   }
 
-  _createPlayerConnection(userId: string, initiator: boolean) {
+  _createPlayerConnection(userId: string) {
     const pc = new PlayerConnection(this._serverConnection, userId);
-    pc.createPeer(initiator)
-    return pc
+    pc.on(PlayerEvent.UpdateParty, data => {});
+    return pc;
   }
 
   get me() {
-    return this._me
+    return this._me;
   }
 
   dispose() {
-    this._serverConnection.dispose()
-    this._party.dispose()
-    this._me.dispose()
+    this._serverConnection.dispose();
+    this._party.dispose();
+    this._me.dispose();
   }
 }
 
 class Room {
-  id: string
-  users: number[]
-
+  id: string;
+  users: number[];
 }
 
 /**
  * パーティ情報
  */
 class Party {
-  id: string
-  owner: User
-  isPrivate: boolean
-  maxUsers: number
-  users: User[]
+  id: string;
+  owner: User;
+  isPrivate: boolean;
+  maxUsers: number;
+  users: User[];
 
   constructor(partyData: ResponseParty, me: User, system: Matching) {
     this.users[0] = me;
-    this.update(partyData, system, true)
+    this.update(partyData, system, true);
   }
 
   update(partyData: ResponseParty, system: Matching, initiator = false): Party {
@@ -83,7 +91,7 @@ class Party {
 
   dispose() {
     for (const user of this.users) {
-      user.dispose()
+      user.dispose();
     }
   }
 }
@@ -92,34 +100,34 @@ class Party {
  * ユーザー情報
  */
 interface User {
-  id: string
-  update(userData: ResponseUser): User
-  dispose(): void
+  id: string;
+  update(userData: ResponseUser): User;
+  dispose(): void;
 }
 
 /**
  * リモートユーザー
  */
 class remoteUser {
-  id: string
-  name: string
-  connection: PlayerConnection
+  id: string;
+  name: string;
+  connection: PlayerConnection;
 
   constructor(userData: ResponseUser, system: Matching, initiator: boolean) {
     this.update(userData);
-    this.connection = system._createPlayerConnection(this.id, initiator);
+    this.connection = system._createPlayerConnection(this.id);
   }
 
   update(userData: ResponseUser) {
     this.id = userData.id;
     this.name = userData.name;
-    return this
+    return this;
   }
 
   dispose() {
     if (this.connection) {
-      this.connection.dispose()
-      this.connection = null
+      this.connection.dispose();
+      this.connection = null;
     }
   }
 }
@@ -128,8 +136,8 @@ class remoteUser {
  * 自分のユーザー
  */
 class Me {
-  id: string
-  name: string
+  id: string;
+  name: string;
 
   constructor(userData: ResponseUser) {
     this.update(userData);
@@ -138,9 +146,8 @@ class Me {
   update(userData: ResponseUser) {
     this.id = userData.id;
     this.name = userData.name;
-    return this
+    return this;
   }
 
-  dispose() {
-  }
+  dispose() {}
 }
