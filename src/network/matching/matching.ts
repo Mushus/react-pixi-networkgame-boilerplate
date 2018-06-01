@@ -4,7 +4,8 @@ import ServerConnection, {
   ResponseParty
 } from '@/network/server';
 import PlayerConnection, {
-  ConnectionEvent as PlayerEvent
+  ConnectionEvent as PlayerEvent,
+  ConnectionEvent
 } from '@/network/player';
 
 export class Matching {
@@ -30,7 +31,6 @@ export class Matching {
 
   _createPlayerConnection(userId: string) {
     const pc = new PlayerConnection(this._serverConnection, userId);
-    pc.on(PlayerEvent.UpdateParty, data => {});
     return pc;
   }
 
@@ -77,7 +77,7 @@ class Party {
       const isFound = index !== -1;
       newUsers[newUsers.length] = isFound
         ? this.users[index].update(userData)
-        : new remoteUser(userData, system, initiator);
+        : new RemoteUser(userData, system, initiator);
       delete this.users[index];
     }
     for (const user of this.users) {
@@ -94,6 +94,16 @@ class Party {
       user.dispose();
     }
   }
+
+  toObject() {
+    return {
+      id: this.id,
+      owner: this.owner.toObject(),
+      isPrivate: this.isPrivate,
+      maxUsers: this.maxUsers,
+      users: this.users
+    };
+  }
 }
 
 /**
@@ -103,19 +113,30 @@ interface User {
   id: string;
   update(userData: ResponseUser): User;
   dispose(): void;
+  toObject(): { id: string; name: string; status: ConnectStatus };
+}
+
+enum ConnectStatus {
+  Ok = 'ok',
+  Ng = 'ng'
 }
 
 /**
  * リモートユーザー
  */
-class remoteUser {
+class RemoteUser {
   id: string;
   name: string;
   connection: PlayerConnection;
+  status: ConnectStatus;
 
   constructor(userData: ResponseUser, system: Matching, initiator: boolean) {
+    this.status = ConnectStatus.Ng;
     this.update(userData);
     this.connection = system._createPlayerConnection(this.id);
+    this.connection.once(ConnectionEvent.Connect, () => {
+      this.status = ConnectStatus.Ok;
+    });
   }
 
   update(userData: ResponseUser) {
@@ -129,6 +150,14 @@ class remoteUser {
       this.connection.dispose();
       this.connection = null;
     }
+  }
+
+  toObject() {
+    return {
+      id: this.id,
+      name: this.name,
+      status: this.status
+    };
   }
 }
 
@@ -150,4 +179,12 @@ class Me {
   }
 
   dispose() {}
+
+  toObject() {
+    return {
+      id: this.id,
+      name: this.name,
+      status: ConnectStatus.Ok
+    };
+  }
 }

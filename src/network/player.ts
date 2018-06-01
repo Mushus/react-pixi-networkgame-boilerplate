@@ -7,23 +7,38 @@ import ServerConnection, {
 import * as MsgPack from 'msgpack-lite';
 
 export enum ConnectionEvent {
-  UpdateParty = 'update_party'
+  Open = 'open',
+  Close = 'close',
+  Connect = 'connect',
+  Error = 'error'
+}
+
+export enum Status {
+  Connecting = 'connecting',
+  Connected = 'connected',
+  // TODO: 使ってない
+  Closed = 'closed'
 }
 
 export default class PlayerConnection {
   serverConnection: ServerConnection;
   peer: Peer.Instance;
   userId: string;
+  status: Status;
 
   _event: {
     [key: string]: { func: ((event: any) => void); once: boolean }[];
   } = {
-    [ConnectionEvent.UpdateParty]: []
+    [ConnectionEvent.Open]: [],
+    [ConnectionEvent.Close]: [],
+    [ConnectionEvent.Connect]: [],
+    [ConnectionEvent.Error]: []
   };
 
   constructor(serverConnection: ServerConnection, userId: string) {
     this.serverConnection = serverConnection;
     this.userId = userId;
+    this.status = Status.Connecting;
   }
 
   request() {
@@ -47,6 +62,8 @@ export default class PlayerConnection {
       );
       // (4) 接続完了
       this.peer.on('connect', () => {
+        this.status = Status.Connected;
+        this._handle(ConnectionEvent.Connect, null);
         var raw = new TextEncoder().encode('from sender!');
         this.peer.send(raw);
         resolve();
@@ -79,6 +96,8 @@ export default class PlayerConnection {
       });
       // (3) 接続完了
       this.peer.on('connect', () => {
+        this.status = Status.Connected;
+        this._handle(ConnectionEvent.Connect, null);
         var raw = MsgPack.encode({ test: 'from receiver!' });
         this.peer.send(raw);
         resolve();
