@@ -64,7 +64,7 @@ export default class PlayerConnection {
       this.peer.on('connect', () => {
         this.status = Status.Connected;
         this._handle(ConnectionEvent.Connect, null);
-        var raw = new TextEncoder().encode('from sender!');
+        var raw = MsgPack.encode('from sender!');
         this.peer.send(raw);
         resolve();
       });
@@ -111,7 +111,9 @@ export default class PlayerConnection {
   }
 
   dispose() {
-    this.peer.destroy();
+    if (this.peer) {
+      this.peer.destroy();
+    }
     delete this._event;
   }
 

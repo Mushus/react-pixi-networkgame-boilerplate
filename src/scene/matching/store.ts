@@ -7,6 +7,7 @@ import ServerConnection, {
 } from '@/network/server';
 import { UserData, PartyData } from '@/scene/matching/types';
 import { Party } from './models/Party';
+import { Matching, MatchingEvent } from '@/network/matching/matching';
 
 const msUrl = `${config.matchingServer.scheme}://${config.matchingServer.url}`;
 
@@ -19,7 +20,7 @@ export default class SceneModel {
   @observable.ref party: Party;
   @observable.ref me: UserData;
   // websocket
-  serverConnection: ServerConnection = null;
+  matching: Matching = null;
 
   constructor(userName: string, invite: string = null) {
     this.init(invite, userName);
@@ -28,80 +29,22 @@ export default class SceneModel {
 
   @action
   init(invite: string, userName: string) {
-    (async () => {
-      const isInvite = invite != null;
-      const conn = await this.createServerConnection(userName);
-      runInAction(() => {
-        this.serverConnection = conn;
-      });
+    const isInvite = invite != null;
+    this.matching = new Matching(msUrl, userName);
+    this.matching.once(MatchingEvent.ConnectServer, () => {
       if (isInvite) {
-        await this.joinParty(invite);
+        this.matching.joinParty(invite);
       } else {
         // 初期状態でパーティを作成
-        await this.createParty();
+        this.matching.createParty(false, 0);
       }
-    })();
-  }
-
-  /**
-   * サーバーとのコネクションを用意する
-   */
-  @action
-  createServerConnection(userName: string) {
-    return new Promise<ServerConnection>(resolve => {
-      const conn = new ServerConnection(
-        `ws://${config.matchingServer.url}`,
-        userName
-      );
-      conn.on('open', () => {
-        resolve(conn);
-      });
-      conn.on('close', () =>
-        action(message => {
-          this.networkClosed = true;
-        })
-      );
-
-      runInAction(() => {
-        this.serverConnection = conn;
-      });
-
-      conn.on(
-        ConnectionEvent.ModifyParty,
-        action(party => {
-          this.party.update(party as ResponseParty);
-        })
-      );
-
-      conn.on(
-        ConnectionEvent.CreateUser,
-        action(user => {
-          this.me = user as ResponseUser;
-        })
-      );
     });
-  }
-
-  @action
-  async createParty() {
-    const party = (await this.serverConnection.createParty()) as PartyData;
-    runInAction(() => {
-      this.party = new Party(this.serverConnection, party, this.me.id);
-    });
-  }
-
-  @action
-  async joinParty(partyId: string) {
-    const party = (await this.serverConnection.joinParty(partyId)) as PartyData;
-    runInAction(() => {
-      this.party = new Party(this.serverConnection, party, this.me.id);
-    });
-  }
-
-  @action
-  async getParty(partyId: string) {
-    const party = await this.serverConnection.getParty(partyId);
-    return party;
+    this.matching.on(
+      MatchingEvent.Update,
+      action((party: Party) => {
+        this.party = party;
+      })
+    );
   }
 
   @action
@@ -121,8 +64,7 @@ export default class SceneModel {
 
   @action
   dispose() {
-    console.log('dispose matching');
-    this.serverConnection.dispose();
+    this.matching.dispose();
     //his.playerConnection.dispose();
   }
 }

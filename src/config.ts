@@ -7,7 +7,7 @@ interface Config {
 
 let config = {
   matchingServer: {
-    scheme: 'http',
+    scheme: 'ws',
     url: 'localhost:8090/hoge'
   }
 };
@@ -16,7 +16,7 @@ if (process.env.NODE_ENV === 'production') {
   config = {
     ...config,
     matchingServer: {
-      scheme: 'http',
+      scheme: 'ws',
       url: 'localhost:8090/hoge'
     }
   };

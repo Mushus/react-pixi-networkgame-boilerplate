@@ -58,7 +58,7 @@ export class User {
   @action
   requestPeer() {
     if (this.connection) {
-      return this.connection.request(this.id);
+      return this.connection.request();
     }
   }
 

@@ -4,20 +4,37 @@ import ServerConnection, {
   ResponseParty
 } from '@/network/server';
 import PlayerConnection, {
-  ConnectionEvent as PlayerEvent,
-  ConnectionEvent
+  ConnectionEvent as PlayerEvent
 } from '@/network/player';
+
+export enum MatchingEvent {
+  ConnectServer = 'connect_server',
+  Update = 'update'
+}
 
 export class Matching {
   _serverConnection: ServerConnection;
   _me: User;
   _party: Party;
+  _event: {
+    [key: string]: { func: ((event: any) => void); once: boolean }[];
+  } = {
+    [MatchingEvent.ConnectServer]: [],
+    [MatchingEvent.Update]: []
+  };
+
   constructor(wsUrl: string, userName: string) {
     const conn = new ServerConnection(wsUrl, userName);
     this._serverConnection = conn;
-
-    conn.on(ServerEvent.CreateUser, (user: ResponseUser) => {
+    conn.once(ServerEvent.Open, () => {
+      this._handle(MatchingEvent.ConnectServer, null);
+    });
+    conn.once(ServerEvent.CreateUser, (user: ResponseUser) => {
       this._me = new Me(user);
+    });
+    conn.on(ServerEvent.ModifyParty, party => {
+      this._party.update(party, this);
+      this._handle(MatchingEvent.Update, this._party.toObject());
     });
   }
 
@@ -27,10 +44,20 @@ export class Matching {
       maxUsers
     );
     this._party = new Party(partyData, this._me, this);
+    this._handle(MatchingEvent.Update, this._party.toObject());
+  }
+
+  async joinParty(partyId: string) {
+    const partyData = await this._serverConnection.joinParty(partyId);
+    this._party = new Party(partyData, this._me, this);
+    this._handle(MatchingEvent.Update, this._party.toObject());
   }
 
   _createPlayerConnection(userId: string) {
     const pc = new PlayerConnection(this._serverConnection, userId);
+    pc.on(PlayerEvent.Connect, () => {
+      this._handle(MatchingEvent.Update, this._party.toObject());
+    });
     return pc;
   }
 
@@ -42,6 +69,28 @@ export class Matching {
     this._serverConnection.dispose();
     this._party.dispose();
     this._me.dispose();
+    this._event = null;
+  }
+
+  on(handler: MatchingEvent, func: (data: any) => void = null) {
+    this._event[handler].push({ func, once: false });
+  }
+
+  once(handler: MatchingEvent, func: (data: any) => void = null) {
+    this._event[handler].push({ func, once: true });
+  }
+
+  off(handler: MatchingEvent, func: (data: any) => void) {
+    const index = this._event[handler].findIndex(event => event.func == func);
+    delete this._event[handler][index];
+  }
+
+  _handle<T>(handler: MatchingEvent, data: T) {
+    if (!this._event[handler]) return;
+    for (const event of this._event[handler]) {
+      event.func(data);
+    }
+    this._event[handler] = this._event[handler].filter(event => !event.once);
   }
 }
 
@@ -61,7 +110,8 @@ class Party {
   users: User[];
 
   constructor(partyData: ResponseParty, me: User, system: Matching) {
-    this.users[0] = me;
+    this.users = [];
+    this.users.push(me);
     this.update(partyData, system, true);
   }
 
@@ -73,15 +123,18 @@ class Party {
     // ユーザーの情報のインスタンスを生成し直さないように更新する
     const newUsers: User[] = [];
     for (const userData of partyData.users) {
-      const index = this.users.findIndex(user => user.id === userData.id);
+      const index = this.users.findIndex(user => {
+        return user && user.id === userData.id;
+      });
       const isFound = index !== -1;
       newUsers[newUsers.length] = isFound
         ? this.users[index].update(userData)
         : new RemoteUser(userData, system, initiator);
       delete this.users[index];
     }
-    for (const user of this.users) {
-      user.dispose();
+
+    for (const i in this.users) {
+      this.users[i].dispose();
     }
     this.users = newUsers;
     this.owner = newUsers.find(user => user.id === partyData.owner.id);
@@ -90,6 +143,7 @@ class Party {
   }
 
   dispose() {
+    this.owner.dispose();
     for (const user of this.users) {
       user.dispose();
     }
@@ -134,9 +188,14 @@ class RemoteUser {
     this.status = ConnectStatus.Ng;
     this.update(userData);
     this.connection = system._createPlayerConnection(this.id);
-    this.connection.once(ConnectionEvent.Connect, () => {
+    this.connection.once(PlayerEvent.Connect, () => {
       this.status = ConnectStatus.Ok;
     });
+    if (initiator) {
+      this.connection.request();
+    } else {
+      this.connection.response();
+    }
   }
 
   update(userData: ResponseUser) {
