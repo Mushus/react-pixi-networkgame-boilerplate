@@ -17,7 +17,7 @@ export default class SceneModel {
   // ネットワークが閉じられているかどうか
   @observable networkClosed = false;
   //パーティ
-  @observable.ref party: Party;
+  @observable party: Party;
   @observable.ref me: UserData;
   // websocket
   matching: Matching = null;
@@ -41,8 +41,9 @@ export default class SceneModel {
     });
     this.matching.on(
       MatchingEvent.Update,
-      action((party: Party) => {
-        this.party = party;
+      action((party: PartyData) => {
+        this.party = this.party || new Party();
+        this.party.update(party);
       })
     );
   }

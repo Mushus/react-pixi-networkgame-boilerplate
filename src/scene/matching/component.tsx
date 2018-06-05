@@ -7,7 +7,6 @@ import SceneModel, {
   PrivateMatchModel
 } from './store';
 import { Party as PartyModel } from './models/Party';
-import { NetworkStatus } from './models/User';
 
 const matching = ({ app }: any) => {
   const props = app as AppStore;
@@ -58,15 +57,6 @@ const Party: React.SFC<{ party: PartyModel }> = observer(
       <ul className="party__member-list">
         {party.users.map((user, key) => (
           <li className="party__member" key={user.id}>
-            {user.networkStatus == NetworkStatus.Me && (
-              <i className="material-icons icon--text">favorite_border</i>
-            )}
-            {user.networkStatus == NetworkStatus.Connecting && (
-              <i className="material-icons icon--text">loop</i>
-            )}
-            {user.networkStatus == NetworkStatus.Connected && (
-              <i className="material-icons icon--text">check_circle_outline</i>
-            )}
             {false && (
               <i className="material-icons icon--text">error_outline</i>
             )}
@@ -96,7 +86,7 @@ const Party: React.SFC<{ party: PartyModel }> = observer(
           <input
             type="text"
             readOnly={true}
-            value={`${location.href}?invite=${party.id}`}
+            value={party.inviteUrl}
           />
           <button>
             <i className="material-icons icon--medium">link</i>
@@ -137,11 +127,16 @@ const privateMatchComponent = ({ app }: any) => {
         {matching.party &&
           matching.party.users &&
           matching.party.users.map(user => (
-            <div>
+            <div key="user.id">
               {matching.party.owner.id == user.id && <span>👑</span>}
               {user.name}
             </div>
           ))}
+          <input
+            type="text"
+            readOnly={true}
+            value={matching.party.inviteUrl}
+          />
       </div>
       <button onClick={() => matching.transitionRobby()}>戻る</button>
     </div>

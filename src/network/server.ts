@@ -57,6 +57,19 @@ export interface ResponseUser {
   name: string;
 }
 
+export interface PartyData {
+  id: string;
+  owner: UserData;
+  isPrivate: boolean;
+  maxUsers: number;
+  users: UserData[];
+}
+
+export interface UserData {
+  id: string;
+  name: string;
+}
+
 export default class ServerConnection {
   /**
    * WebSocket
