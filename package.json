@@ -24,7 +24,7 @@
         "yarn": "^1.6.0"
     },
     "devDependencies": {
-        "@types/query-string": "^5.1.0",
+        "@types/query-string": "^6.3.0",
         "@types/react": "^16.3.14",
         "@types/react-dom": "^16.0.5",
         "css-loader": "^0.28.11",
