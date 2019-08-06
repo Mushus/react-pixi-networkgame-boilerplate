@@ -12,7 +12,7 @@
         "mobx": "^4.2.1",
         "mobx-react": "^5.1.2",
         "msgpack-lite": "^0.1.26",
-        "normalize.css": "^8.0.0",
+        "normalize.css": "^8.0.1",
         "pixi.js": "^4.7.3",
         "prettier": "^1.12.1",
         "query-string": "^6.1.0",
