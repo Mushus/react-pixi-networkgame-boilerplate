@@ -21,7 +21,7 @@
         "react-mobx": "^0.0.3",
         "react-pixi-fiber": "^0.4.4",
         "simple-peer": "^9.1.1",
-        "yarn": "^1.6.0"
+        "yarn": "^1.17.3"
     },
     "devDependencies": {
         "@types/query-string": "^5.1.0",
