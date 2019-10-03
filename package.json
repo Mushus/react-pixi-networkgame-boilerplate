@@ -9,7 +9,7 @@
         "add": "^2.0.6",
         "axios": "^0.18.0",
         "jest": "^23.1.0",
-        "mobx": "^4.2.1",
+        "mobx": "^4.14.0",
         "mobx-react": "^5.1.2",
         "msgpack-lite": "^0.1.26",
         "normalize.css": "^8.0.0",
